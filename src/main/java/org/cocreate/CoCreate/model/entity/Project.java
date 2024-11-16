@@ -42,16 +42,15 @@ public class Project {
     @Field("updated_at")
     private LocalDateTime updatedAt;
 
-    @Field("department_id")
-    private String departmentId;
+    @Field("department")
+    //Null if personal
+    private Department department;
 
     @Field("owner")
-    //TODO make class User
-    private String owner;
+    private User owner;
 
     @Field("team_members")
-    //TODO make class User
-    private List<String> teamMembers;
+    private List<User> teamMembers;
 
     // The "workflow" map defines the stages, task dependencies, and progress, enabling visualizations like Kanban, Scrum, Calendar & etc.
     private Map<String, Object> workflow;
@@ -63,9 +62,8 @@ public class Project {
     private Integer progress;
     private List<String> tags;
 
-    @Field("related_tickets")
-    //TODO make class Ticket
-    private List<String> relatedTickets;
+    @Field("related_tickets_id")
+    private List<String> relatedTicketsId;
 
     @Field("parent_project_id")
     private String parentProjectId;

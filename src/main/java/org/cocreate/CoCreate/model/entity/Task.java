@@ -17,8 +17,7 @@ public class Task {
 
     private String description;
 
-    //TODO make class User
-    private List<String> assignedUsers;
+    private List<User> assignedUsers;
 
     private LocalDateTime startDate;
 
