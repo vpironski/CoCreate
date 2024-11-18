@@ -11,7 +11,7 @@ import java.util.List;
 
 @Setter
 @Getter
-@Document(collation = "users")
+@Document(collection = "users")
 public class User {
     @Id
     private String id;

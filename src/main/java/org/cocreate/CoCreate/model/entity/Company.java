@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Setter
 @Getter
-@Document (collation = "companies")
+@Document (collection = "companies")
 public class Company {
     @Id
     private String id;
