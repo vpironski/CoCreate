@@ -1,5 +1,6 @@
 package org.cocreate.CoCreate.service;
 
+import org.cocreate.CoCreate.exception.EntityNotFoundException;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.User;
 import org.cocreate.CoCreate.repository.ProjectRepository;
@@ -30,11 +31,11 @@ public class ProjectService {
 
     public Project updateProject(String userId, String projectId, Project updatedProject) {
         Project existingProject = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Project Not Found with ID " + projectId));
 
         User user = userService.getUserById(userId);
         if (!existingProject.getOwner().equals(user)) {
-            throw new RuntimeException("User does not own this project");
+            throw new IllegalArgumentException("User does not own this project");
         }
 
         existingProject.setName(updatedProject.getName());
@@ -46,11 +47,11 @@ public class ProjectService {
 
     public void deleteProject(String userId, String projectId) {
         Project existingProject = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Project Not Found with ID " + projectId));
 
         User user = userService.getUserById(userId);
         if (!existingProject.getOwner().equals(user)) {
-            throw new RuntimeException("User does not own this project");
+            throw new IllegalArgumentException("User does not own this project");
         }
 
         projectRepository.delete(existingProject);

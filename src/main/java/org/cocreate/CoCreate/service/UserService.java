@@ -1,5 +1,6 @@
 package org.cocreate.CoCreate.service;
 
+import org.cocreate.CoCreate.exception.EntityNotFoundException;
 import org.cocreate.CoCreate.model.entity.User;
 import org.cocreate.CoCreate.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,7 @@ public class UserService {
 
     public User getUserById(String userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User Not Found with ID: " + userId));
     }
 }
 
