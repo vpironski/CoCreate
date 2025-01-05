@@ -1,6 +1,7 @@
 package org.cocreate.CoCreate.controller;
 
 import org.cocreate.CoCreate.model.entity.Project;
+import org.cocreate.CoCreate.model.entity.Task;
 import org.cocreate.CoCreate.service.ProjectService;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +38,30 @@ public class ProjectController {
     @DeleteMapping("/deleteProject/{projectId}")
     public void deleteProject(@PathVariable String userId, @PathVariable String projectId) {
         projectService.deleteProject(userId, projectId);
+    }
+
+    @PostMapping("/{projectId}/createTask")
+    public Task createTask(@PathVariable String projectId, @RequestBody Task task) {
+        return projectService.createTask(projectId, task);
+    }
+
+    @GetMapping("/{projectId}")
+    public List<Task> getTasksByProject(@PathVariable String projectId) {
+        return projectService.getTasksByProject(projectId);
+    }
+
+    @PutMapping("/{projectId}/{taskId}")
+    public Task updateTask(
+            @PathVariable String projectId,
+            @PathVariable String taskId,
+            @RequestBody Task updatedTask
+    ) {
+        return projectService.updateTask(projectId, taskId, updatedTask);
+    }
+
+    @DeleteMapping("/{projectId}/{taskId}")
+    public void deleteTask(@PathVariable String projectId, @PathVariable String taskId) {
+        projectService.deleteTask(projectId, taskId);
     }
 }
 
