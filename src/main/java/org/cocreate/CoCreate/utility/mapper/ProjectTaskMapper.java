@@ -5,7 +5,7 @@ import org.cocreate.CoCreate.model.entity.Task;
 
 public class ProjectTaskMapper {
 
-    public static Project mapToProject(Project source, Project target) {
+    public static void mapToProject(Project source, Project target) {
         if (source.getName() != null && !source.getName().isEmpty()) {
             target.setName(source.getName());
         }
@@ -72,10 +72,9 @@ public class ProjectTaskMapper {
         if (source.getCustomFields() != null && !source.getCustomFields().isEmpty()) {
             target.setCustomFields(source.getCustomFields());
         }
-        return target;
     }
 
-    public static Task mapToTask(Task source, Task target) {
+    public static void mapToTask(Task source, Task target) {
         if (source.getId() != null && !source.getId().isEmpty()) {
             target.setId(source.getId());
         }
@@ -103,6 +102,5 @@ public class ProjectTaskMapper {
         if (source.getDependencies() != null && !source.getDependencies().isEmpty()) {
             target.setDependencies(source.getDependencies());
         }
-        return target;
     }
 }
