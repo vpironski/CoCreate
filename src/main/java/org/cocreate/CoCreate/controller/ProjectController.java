@@ -20,6 +20,10 @@ public class ProjectController {
     public List<Project> viewProjects(@PathVariable String userId) {
         return projectService.getProjectsByUserId(userId);
     }
+    @GetMapping("/dashboard/{projectId}")
+    public Project viewProject(@PathVariable String userId, @PathVariable String projectId){
+        return projectService.getProjectByIdAndUserId(userId, projectId);
+    }
 
     @PostMapping("/createProject")
     public Project createProject(@PathVariable String userId, @RequestBody Project project) {

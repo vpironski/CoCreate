@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface ProjectRepository extends MongoRepository<Project, String> {
     List<Project> findAllByOwner(User owner);
+    Project findProjectByIdAndOwner(String id, User user);
 }
