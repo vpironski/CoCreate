@@ -26,6 +26,11 @@ public class ProjectService {
         return projectRepository.findAllByOwner(user);
     }
 
+    public Project getProjectByIdAndUserId(String userId, String projectId){
+        User user = userService.getUserById(userId);
+        return projectRepository.findProjectByIdAndOwner(projectId,user);
+    }
+
     public Project createProject(String userId, Project project) {
         User user = userService.getUserById(userId);
         project.setOwner(user);
