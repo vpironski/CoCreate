@@ -52,25 +52,35 @@ public class ProjectController {
     }
 
     @PostMapping("/{projectId}/createTask")
-    public ResponseEntity<ResponseMessage> createTask(@PathVariable String projectId, @RequestBody Task task) {
-        projectService.createTask(projectId, task);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseMessage("Task created successfully!"));
+    public ResponseEntity<ResponseMessage> createTask(
+            @PathVariable String userId,
+            @PathVariable String projectId,
+            @RequestBody Task task) {
+        projectService.createTask(userId, projectId, task);
+        return ResponseEntity.ok(new ResponseMessage("Task created successfully!"));
+    }
+
+    @GetMapping("/{projectId}/tasks")
+    public ResponseEntity<List<Task>> getTasksByProject(@PathVariable String userId, @PathVariable String projectId) {
+        return ResponseEntity.ok(projectService.getTasksByProject(userId, projectId));
     }
 
     @PutMapping("/{projectId}/tasks/{taskId}")
     public ResponseEntity<ResponseMessage> updateTask(
+            @PathVariable String userId,
             @PathVariable String projectId,
             @PathVariable String taskId,
             @RequestBody Task updatedTask) {
-        projectService.updateTask(projectId, taskId, updatedTask);
+        projectService.updateTask(userId, projectId, taskId, updatedTask);
         return ResponseEntity.ok(new ResponseMessage("Task updated successfully!"));
     }
 
     @DeleteMapping("/{projectId}/tasks/{taskId}")
-    public ResponseEntity<ResponseMessage> deleteTask(@PathVariable String projectId, @PathVariable String taskId) {
-        projectService.deleteTask(projectId, taskId);
+    public ResponseEntity<ResponseMessage> deleteTask(
+            @PathVariable String userId,
+            @PathVariable String projectId,
+            @PathVariable String taskId) {
+        projectService.deleteTask(userId, projectId, taskId);
         return ResponseEntity.ok(new ResponseMessage("Task deleted successfully!"));
     }
 }
-
-
