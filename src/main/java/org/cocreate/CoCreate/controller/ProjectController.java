@@ -1,14 +1,17 @@
 package org.cocreate.CoCreate.controller;
 
+import org.cocreate.CoCreate.model.dto.ResponseMessage;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
 import org.cocreate.CoCreate.service.ProjectService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/cocreate/{userId}/")
+@RequestMapping("/cocreate/{userId}/projects")
 public class ProjectController {
     private final ProjectService projectService;
 
@@ -17,55 +20,57 @@ public class ProjectController {
     }
 
     @GetMapping("/viewProjects")
-    public List<Project> viewProjects(@PathVariable String userId) {
-        return projectService.getProjectsByUserId(userId);
+    public ResponseEntity<List<Project>> viewProjects(@PathVariable String userId) {
+        return ResponseEntity.ok(projectService.getProjectsByUserId(userId));
     }
+
     @GetMapping("/dashboard/{projectId}")
-    public Project viewProject(@PathVariable String userId, @PathVariable String projectId){
-        return projectService.getProjectByIdAndUserId(userId, projectId);
+    public ResponseEntity<Project> viewProject(@PathVariable String userId, @PathVariable String projectId) {
+        return ResponseEntity.ok(projectService.getProjectByIdAndUserId(userId, projectId));
     }
 
     @PostMapping("/createProject")
-    public Project createProject(@PathVariable String userId, @RequestBody Project project) {
-        return projectService.createProject(userId, project);
+    public ResponseEntity<ResponseMessage> createProject(@PathVariable String userId, @RequestBody Project project) {
+        projectService.createProject(userId, project);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseMessage("Project created successfully!"));
     }
 
     @PutMapping("/editProject/{projectId}")
-    public Project editProject(
+    public ResponseEntity<ResponseMessage> editProject(
             @PathVariable String userId,
             @PathVariable String projectId,
             @RequestBody Project updatedProject
     ) {
-        return projectService.updateProject(userId, projectId, updatedProject);
+        projectService.updateProject(userId, projectId, updatedProject);
+        return ResponseEntity.ok(new ResponseMessage("Project updated successfully!"));
     }
 
     @DeleteMapping("/deleteProject/{projectId}")
-    public void deleteProject(@PathVariable String userId, @PathVariable String projectId) {
+    public ResponseEntity<ResponseMessage> deleteProject(@PathVariable String userId, @PathVariable String projectId) {
         projectService.deleteProject(userId, projectId);
+        return ResponseEntity.ok(new ResponseMessage("Project deleted successfully!"));
     }
 
     @PostMapping("/{projectId}/createTask")
-    public Task createTask(@PathVariable String projectId, @RequestBody Task task) {
-        return projectService.createTask(projectId, task);
+    public ResponseEntity<ResponseMessage> createTask(@PathVariable String projectId, @RequestBody Task task) {
+        projectService.createTask(projectId, task);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseMessage("Task created successfully!"));
     }
 
-    @GetMapping("/{projectId}")
-    public List<Task> getTasksByProject(@PathVariable String projectId) {
-        return projectService.getTasksByProject(projectId);
-    }
-
-    @PutMapping("/{projectId}/{taskId}")
-    public Task updateTask(
+    @PutMapping("/{projectId}/tasks/{taskId}")
+    public ResponseEntity<ResponseMessage> updateTask(
             @PathVariable String projectId,
             @PathVariable String taskId,
-            @RequestBody Task updatedTask
-    ) {
-        return projectService.updateTask(projectId, taskId, updatedTask);
+            @RequestBody Task updatedTask) {
+        projectService.updateTask(projectId, taskId, updatedTask);
+        return ResponseEntity.ok(new ResponseMessage("Task updated successfully!"));
     }
 
-    @DeleteMapping("/{projectId}/{taskId}")
-    public void deleteTask(@PathVariable String projectId, @PathVariable String taskId) {
+    @DeleteMapping("/{projectId}/tasks/{taskId}")
+    public ResponseEntity<ResponseMessage> deleteTask(@PathVariable String projectId, @PathVariable String taskId) {
         projectService.deleteTask(projectId, taskId);
+        return ResponseEntity.ok(new ResponseMessage("Task deleted successfully!"));
     }
 }
+
 
