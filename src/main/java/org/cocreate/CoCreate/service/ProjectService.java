@@ -29,7 +29,11 @@ public class ProjectService {
     public Project getProjectByIdAndUserId(String userId, String projectId) {
         User user = userService.getUserById(userId);
         return projectRepository.findProjectByIdAndOwner(projectId, user)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found for user: " + user.getUsername() + " !"));
+                .orElseThrow(() -> new IllegalArgumentException("Project not found for user: " + user.getUsername() + " !"));
+    }
+
+    public Project getProjectForEdit(String userId, String projectId) {
+        return getProjectByIdAndUserId(userId, projectId); // Reuse existing method with exception handling
     }
 
     public Project createProject(String userId, Project project) {
@@ -39,27 +43,26 @@ public class ProjectService {
     }
 
     public Project updateProject(String userId, String projectId, Project updatedProject) {
-        User user = userService.getUserById(userId);
-        Project existingProject = projectRepository.findProjectByIdAndOwner(projectId, user)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found for user: " + user.getUsername() + " !"));
-
+        Project existingProject = getProjectByIdAndUserId(userId, projectId); // Ensures project ownership
         ProjectTaskMapper.mapToProject(updatedProject, existingProject);
         return projectRepository.save(existingProject);
     }
 
     public void deleteProject(String userId, String projectId) {
-        User user = userService.getUserById(userId);
-        Project existingProject = projectRepository.findProjectByIdAndOwner(projectId, user)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found for user: " + user.getUsername() + " !"));
-
+        Project existingProject = getProjectByIdAndUserId(userId, projectId);
         projectRepository.delete(existingProject);
     }
 
-    public Task createTask(String userId, String projectId, Task task) {
-        User user = userService.getUserById(userId);
-        Project project = projectRepository.findProjectByIdAndOwner(projectId, user)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found for user: " + user.getUsername() + " !"));
+    public Task getTaskForEdit(String userId, String projectId, String taskId) {
+        Project project = getProjectByIdAndUserId(userId, projectId);
+        return project.getTasks().stream()
+                .filter(task -> task.getId().equals(taskId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Task not found in project for user: " + userId + " !"));
+    }
 
+    public Task createTask(String userId, String projectId, Task task) {
+        Project project = getProjectByIdAndUserId(userId, projectId);
         task.setId(UUID.randomUUID().toString());
         project.getTasks().add(task);
         projectRepository.save(project);
@@ -67,40 +70,27 @@ public class ProjectService {
     }
 
     public List<Task> getTasksByProject(String userId, String projectId) {
-        User user = userService.getUserById(userId);
-        Project project = projectRepository.findProjectByIdAndOwner(projectId, user)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found for user: " + user.getUsername() + " !"));
-
+        Project project = getProjectByIdAndUserId(userId, projectId);
         return project.getTasks();
     }
 
     public Task updateTask(String userId, String projectId, String taskId, Task updatedTask) {
-        User user = userService.getUserById(userId);
-        Project project = projectRepository.findProjectByIdAndOwner(projectId, user)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found for user: " + user.getUsername() + " !"));
-
-        Task existingTask = project.getTasks().stream()
-                .filter(task -> task.getId().equals(taskId))
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("Task not found in project for user: " + user.getUsername() + " !"));
-
+        Project project = getProjectByIdAndUserId(userId, projectId);
+        Task existingTask = getTaskForEdit(userId, projectId, taskId);
         ProjectTaskMapper.mapToTask(updatedTask, existingTask);
         projectRepository.save(project);
         return existingTask;
     }
 
     public void deleteTask(String userId, String projectId, String taskId) {
-        User user = userService.getUserById(userId);
-        Project project = projectRepository.findProjectByIdAndOwner(projectId, user)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found for user: " + user.getUsername() + " !"));
-
+        Project project = getProjectByIdAndUserId(userId, projectId);
         boolean removed = project.getTasks().removeIf(task -> task.getId().equals(taskId));
         if (!removed) {
-            throw new EntityNotFoundException("Task not found in project for user: " + user.getUsername() + " !");
+            throw new IllegalArgumentException("Task not found in project for user: " + userId + " !");
         }
-
         projectRepository.save(project);
     }
 }
+
 
 

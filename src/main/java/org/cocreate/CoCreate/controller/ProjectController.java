@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/cocreate/{userId}/projects")
+@RequestMapping("/{userId}/projects")
 public class ProjectController {
     private final ProjectService projectService;
 
@@ -29,10 +29,20 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.getProjectByIdAndUserId(userId, projectId));
     }
 
+    @GetMapping("/createProject")
+    public ResponseEntity<Project> getEmptyProjectTemplate(@PathVariable String userId) {
+        return ResponseEntity.ok(new Project());
+    }
+
     @PostMapping("/createProject")
     public ResponseEntity<ResponseMessage> createProject(@PathVariable String userId, @RequestBody Project project) {
         projectService.createProject(userId, project);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseMessage("Project created successfully!"));
+    }
+
+    @GetMapping("/editProject/{projectId}")
+    public ResponseEntity<Project> getProjectForEdit(@PathVariable String userId, @PathVariable String projectId) {
+        return ResponseEntity.ok(projectService.getProjectForEdit(userId, projectId));
     }
 
     @PutMapping("/editProject/{projectId}")
@@ -51,6 +61,11 @@ public class ProjectController {
         return ResponseEntity.ok(new ResponseMessage("Project deleted successfully!"));
     }
 
+    @GetMapping("/{projectId}/createTask")
+    public ResponseEntity<Task> getEmptyTaskTemplate(@PathVariable String userId, @PathVariable String projectId) {
+        return ResponseEntity.ok(new Task());
+    }
+
     @PostMapping("/{projectId}/createTask")
     public ResponseEntity<ResponseMessage> createTask(
             @PathVariable String userId,
@@ -63,6 +78,14 @@ public class ProjectController {
     @GetMapping("/{projectId}/tasks")
     public ResponseEntity<List<Task>> getTasksByProject(@PathVariable String userId, @PathVariable String projectId) {
         return ResponseEntity.ok(projectService.getTasksByProject(userId, projectId));
+    }
+
+    @GetMapping("/{projectId}/tasks/{taskId}")
+    public ResponseEntity<Task> getTaskForEdit(
+            @PathVariable String userId,
+            @PathVariable String projectId,
+            @PathVariable String taskId) {
+        return ResponseEntity.ok(projectService.getTaskForEdit(userId, projectId, taskId));
     }
 
     @PutMapping("/{projectId}/tasks/{taskId}")
@@ -84,3 +107,4 @@ public class ProjectController {
         return ResponseEntity.ok(new ResponseMessage("Task deleted successfully!"));
     }
 }
+
