@@ -5,7 +5,6 @@ import org.cocreate.CoCreate.model.dto.ResponseMessage;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
 import org.cocreate.CoCreate.service.ProjectService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,7 +71,7 @@ public class ProjectController {
         if (!projectService.createTask(userId, projectId, task)) {
             throw new BadRequestException("Failed to create task!");
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseMessage("Task created successfully!"));
+        return ResponseEntity.ok(new ResponseMessage("Task created successfully!"));
     }
 
     @PutMapping("/{projectId}/tasks/{taskId}")

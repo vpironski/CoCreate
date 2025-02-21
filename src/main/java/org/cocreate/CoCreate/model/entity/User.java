@@ -2,6 +2,7 @@ package org.cocreate.CoCreate.model.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.cocreate.CoCreate.model.enums.UserRoleEnum;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -34,9 +35,12 @@ public class User {
     @Field("assigned_tickets")
     private List<String> assignedTickets;
 
-    @Field("roles")
+    @Field("company_roles")
     // Roles within the company or department
-    private List<String> roles;
+    private List<String> companyRole;
+
+    @Field("roles")
+    private List<UserRoleEnum> roles;
 
     @Field("personal_projects")
     private List<String> personalProjects;
