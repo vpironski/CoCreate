@@ -22,9 +22,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) {
-        User user = userRepository.findByEmail(email) // Ensure search is done by email
-                .orElseThrow(() -> new UserException("User not found with email: " + email));
+    public UserDetails loadUserByUsername(String username) {
+        User user = userRepository.findByUsername(username) // Ensure search is done by email
+                .orElseThrow(() -> new UserException("User not found with username: " + username));
 
         List<GrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))

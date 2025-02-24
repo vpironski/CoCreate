@@ -1,6 +1,7 @@
 package org.cocreate.CoCreate.controller;
 
 import org.cocreate.CoCreate.exception.BadRequestException;
+import org.cocreate.CoCreate.model.dto.LoginResponse;
 import org.cocreate.CoCreate.model.dto.ResponseMessage;
 import org.cocreate.CoCreate.model.dto.UserRegisterDTO;
 import org.cocreate.CoCreate.model.entity.User;
@@ -14,8 +15,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
@@ -33,26 +32,33 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseMessage> registerUser(@RequestBody UserRegisterDTO userDto) {
+    public ResponseEntity<LoginResponse> registerUser(@RequestBody UserRegisterDTO userDto) {
         if (!userService.createUser(userDto)) {
             throw new BadRequestException("Registration failed");
         }
-        return ResponseEntity.ok(new ResponseMessage("User registered successfully"));
+        User user = userService.getUserByEmail(userDto.email());
+
+        String token = jwtUtils.generateToken(user.getUsername());
+
+        String message = "User registered successfully";
+
+        LoginResponse loginResponse = new LoginResponse(message, token);
+        return ResponseEntity.ok(loginResponse);
     }
 
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody AuthRequest request) {
+    public ResponseEntity<LoginResponse> login(@RequestBody AuthRequest request) {
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.email(), request.password())
+                new UsernamePasswordAuthenticationToken(request.username(), request.password())
         );
 
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(request.email());
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(request.username());
+        String message = "User logged in successfully";
         String token = jwtUtils.generateToken(userDetails.getUsername());
 
-        Map<String, String> response = new HashMap<>();
-        response.put("token", token);
-        return ResponseEntity.ok(response);
+        LoginResponse loginResponse = new LoginResponse(message, token);
+        return ResponseEntity.ok(loginResponse);
     }
 
     @GetMapping("/{userId}")

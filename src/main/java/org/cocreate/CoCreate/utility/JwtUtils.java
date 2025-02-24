@@ -7,13 +7,16 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.function.Function;
 
 @Component
 public class JwtUtils {
-    private final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final long EXPIRATION_TIME = 3600000;
+    private final String key = System.getenv("JWT_SECRET_KEY");
+
+    private final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(key.getBytes(StandardCharsets.UTF_8));
+    private final long EXPIRATION_TIME = 3600000 * 24;
 
     // Generate a JWT token with expiration time
     public String generateToken(String username) {
@@ -57,6 +60,9 @@ public class JwtUtils {
 
     // Validate the token (check if it's valid and matches the user)
     public boolean validateToken(String token, String username) {
+        System.out.println("JWT Token: " + token);
+        System.out.println("SECRET_KEY: " + SECRET_KEY);
+
         final String tokenUsername = extractUsername(token);
         return (tokenUsername.equals(username) && !isTokenExpired(token));
     }

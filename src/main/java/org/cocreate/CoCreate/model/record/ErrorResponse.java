@@ -1,4 +1,4 @@
 package org.cocreate.CoCreate.model.record;
 
-public record ErrorResponse(String error, String message) {
+public record ErrorResponse(String error) {
 }
