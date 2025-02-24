@@ -1,5 +1,6 @@
 package org.cocreate.CoCreate.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,58 +23,59 @@ import java.util.Map;
 public class Project {
 
     @Id
-    private String id;
-    private String name;
-    private String description;
-    private ProjectStatus status;
+    private String id = "";
+    private String name = "";
+    private String description = "";
+    private ProjectStatus status = ProjectStatus.DRAFT;
 
     @Field("tasks")
-    private List<Task> tasks;
+    private List<Task> tasks = List.of();
 
     @Field("start_date")
-    private LocalDateTime startDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime startDate = LocalDateTime.now();
 
     @Field("end_date")
-    private LocalDateTime endDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime endDate = LocalDateTime.now();
 
     @Field("created_at")
-    private LocalDateTime createdAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Field("updated_at")
-    private LocalDateTime updatedAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     @Field("department")
-    //Null if personal
-    private Department department;
+    private String departmentId = "";
 
     @Field("owner")
-    private User owner;
+    private String ownerId = "";
 
     @Field("team_members")
-    private List<User> teamMembers;
+    private List<User> teamMembers = List.of();
 
-    // The "workflow" map defines the stages, task dependencies, and progress, enabling visualizations like Kanban, Scrum, Calendar & etc.
-    private Map<String, Object> workflow;
-    //Custom prj settings
-    private Map<String, Object> settings;
+    private Map<String, Object> workflow = Map.of();
+    private Map<String, Object> settings = Map.of();
 
-    private Priority priority;
-    //Percent
-    private Integer progress;
-    private List<String> tags;
+    private Priority priority = Priority.MEDIUM;
+    private Integer progress = 0;
+
+    private List<String> tags = List.of();
 
     @Field("related_tickets_id")
-    private List<String> relatedTicketsId;
+    private List<String> relatedTicketsId = List.of();
 
     @Field("parent_project_id")
-    private String parentProjectId;
+    private String parentProjectId = "";
 
-    private Double budget;
-    private Map<String, Object> resources;
+    private Double budget = 0.0;
+    private Map<String, Object> resources = Map.of();
 
     @Field("activity_log")
-    private List<Map<String, Object>> activityLog;
+    private List<Map<String, Object>> activityLog = List.of();
 
     @Field("custom_fields")
-    private Map<String, Object> customFields;
+    private Map<String, Object> customFields = Map.of();
 }

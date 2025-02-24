@@ -1,6 +1,7 @@
 package org.cocreate.CoCreate.controller;
 
 import org.cocreate.CoCreate.exception.BadRequestException;
+import org.cocreate.CoCreate.model.dto.ProjectDTO;
 import org.cocreate.CoCreate.model.dto.ResponseMessage;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
@@ -19,7 +20,7 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
-    @GetMapping("/viewProjects")
+    @GetMapping("/dashboard")
     public ResponseEntity<List<Project>> viewProjects(@PathVariable String userId) {
         return ResponseEntity.ok(projectService.getProjectsByUserId(userId));
     }
@@ -30,13 +31,13 @@ public class ProjectController {
     }
 
     @GetMapping("/createProject")
-    public ResponseEntity<Project> getEmptyProjectTemplate(@PathVariable String userId) {
-        return ResponseEntity.ok(new Project());
+    public ResponseEntity<ProjectDTO> getEmptyProjectTemplate(@PathVariable String userId) {
+        return ResponseEntity.ok(new ProjectDTO());
     }
 
     @PostMapping("/createProject")
-    public ResponseEntity<ResponseMessage> createProject(@PathVariable String userId, @RequestBody Project project) {
-        if (!projectService.createProject(userId, project)) {
+    public ResponseEntity<ResponseMessage> createProject(@PathVariable String userId, @RequestBody ProjectDTO dto) {
+        if (!projectService.createProject(userId, dto)) {
             throw new BadRequestException("Failed to create project!");
         }
         return ResponseEntity.ok(new ResponseMessage("Project created successfully!"));

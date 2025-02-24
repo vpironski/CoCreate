@@ -1,9 +1,50 @@
 package org.cocreate.CoCreate.utility.mapper;
 
+import org.cocreate.CoCreate.model.dto.ProjectDTO;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
+import org.cocreate.CoCreate.model.enums.Priority;
+import org.cocreate.CoCreate.model.enums.ProjectStatus;
+import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+@Component
 public class ProjectTaskMapper {
+    public static Project mapToProject(ProjectDTO projectDTO, String userId) {
+        Project project = new Project();
+
+        // Map fields from ProjectDTO to Project entity
+        project.setName(projectDTO.getName());
+        project.setDescription(projectDTO.getDescription());
+        project.setStartDate(projectDTO.getStartDate());
+        project.setEndDate(projectDTO.getEndDate());
+        project.setCreatedAt(projectDTO.getCreatedAt());
+        project.setUpdatedAt(projectDTO.getUpdatedAt());
+        project.setDepartmentId(projectDTO.getDepartmentId());
+        project.setWorkflow(projectDTO.getWorkflow());
+        project.setSettings(projectDTO.getSettings());
+        project.setBudget(projectDTO.getBudget());
+        project.setParentProjectId(projectDTO.getParentProjectId());
+        project.setCustomFields(projectDTO.getCustomFields());
+
+        // Set default values or values that are not in the DTO
+        project.setId(UUID.randomUUID().toString());
+        project.setOwnerId(userId); // Set the ownerId from the provided userId
+        project.setStatus(ProjectStatus.DRAFT); // Set status to DRAFT
+        project.setPriority(Priority.MEDIUM); // Set default priority to MEDIUM
+        project.setProgress(0); // Set default progress to 0
+        project.setTags(List.of()); // Set empty list for tags if none are provided
+        project.setRelatedTicketsId(List.of()); // Set empty list for related tickets
+        project.setResources(Map.of()); // Set empty map for resources
+        project.setActivityLog(List.of()); // Set empty list for activity log
+        project.setTeamMembers(List.of()); // Set empty list for team members
+        project.setTasks(List.of()); // Set empty list for tasks
+
+        return project;
+    }
 
     public static void mapToProject(Project source, Project target) {
         if (source.getName() != null && !source.getName().isEmpty()) {
@@ -30,11 +71,11 @@ public class ProjectTaskMapper {
         if (source.getUpdatedAt() != null) {
             target.setUpdatedAt(source.getUpdatedAt());
         }
-        if (source.getDepartment() != null) {
-            target.setDepartment(source.getDepartment());
+        if (source.getDepartmentId() != null) {
+            target.setDepartmentId(source.getDepartmentId());
         }
-        if (source.getOwner() != null) {
-            target.setOwner(source.getOwner());
+        if (source.getOwnerId() != null) {
+            target.setOwnerId(source.getOwnerId());
         }
         if (source.getTeamMembers() != null && !source.getTeamMembers().isEmpty()) {
             target.setTeamMembers(source.getTeamMembers());

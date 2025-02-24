@@ -1,6 +1,7 @@
 package org.cocreate.CoCreate.service;
 
 import org.cocreate.CoCreate.exception.EntityNotFoundException;
+import org.cocreate.CoCreate.model.dto.ProjectDTO;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
 import org.cocreate.CoCreate.model.entity.User;
@@ -15,20 +16,22 @@ import java.util.UUID;
 public class ProjectService {
     private final ProjectRepository projectRepository;
     private final UserService userService;
+    private final ProjectTaskMapper projectTaskMapper;
 
-    public ProjectService(ProjectRepository projectRepository, UserService userService) {
+    public ProjectService(ProjectRepository projectRepository, UserService userService, ProjectTaskMapper projectTaskMapper) {
         this.projectRepository = projectRepository;
         this.userService = userService;
+        this.projectTaskMapper = projectTaskMapper;
     }
 
     public List<Project> getProjectsByUserId(String userId) {
         User user = userService.getUserById(userId);
-        return projectRepository.findAllByOwner(user);
+        return projectRepository.findAllByOwnerId(user.getId());
     }
 
     public Project getProjectByIdAndUserId(String userId, String projectId) {
         User user = userService.getUserById(userId);
-        return projectRepository.findProjectByIdAndOwner(projectId, user)
+        return projectRepository.findProjectByIdAndOwnerId(projectId, user.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Project not found for user: " + user.getUsername() + " !"));
     }
 
@@ -36,11 +39,14 @@ public class ProjectService {
         return getProjectByIdAndUserId(userId, projectId);
     }
 
-    public boolean createProject(String userId, Project project) {
-        User user = userService.getUserById(userId);
-        project.setOwner(user);
+    public boolean createProject(String userId, ProjectDTO projectDTO) {
+        // Map the DTO to the Project entity
+        Project project = projectTaskMapper.mapToProject(projectDTO, userId);
+
+        // Save the project to the repository
         projectRepository.save(project);
-        return true;
+
+        return true; // Return success
     }
 
     public boolean updateProject(String userId, String projectId, Project updatedProject) {
