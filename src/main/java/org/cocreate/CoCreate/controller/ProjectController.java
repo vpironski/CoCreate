@@ -65,7 +65,7 @@ public class ProjectController {
 
     @DeleteMapping("/deleteProject/{projectId}")
     public ResponseEntity<ResponseMessage> deleteProject(@PathVariable String userId,
-                                                         @PathVariable String projectId) {
+                                                         @PathVariable String projectId) throws IllegalAccessException {
         if (!projectService.deleteProject(userId, projectId)) {
             throw new BadRequestException("Failed to delete project!");
         }

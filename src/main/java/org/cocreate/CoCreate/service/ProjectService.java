@@ -10,8 +10,6 @@ import org.cocreate.CoCreate.model.entity.User;
 import org.cocreate.CoCreate.repository.AuditRepository;
 import org.cocreate.CoCreate.repository.ProjectRepository;
 import org.cocreate.CoCreate.utility.mapper.ProjectTaskMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -22,15 +20,16 @@ import java.util.Map;
 
 @Service
 public class ProjectService {
-    private final Logger logger = LoggerFactory.getLogger(ProjectService.class);
 
     private final ProjectRepository projectRepository;
     private final UserService userService;
+    private final LogService logService;
     private final AuditRepository auditLogRepository;
 
-    public ProjectService(ProjectRepository projectRepository, UserService userService, AuditRepository auditLogRepository) {
+    public ProjectService(ProjectRepository projectRepository, UserService userService, LogService logService, AuditRepository auditLogRepository) {
         this.projectRepository = projectRepository;
         this.userService = userService;
+        this.logService = logService;
         this.auditLogRepository = auditLogRepository;
     }
 
@@ -50,36 +49,52 @@ public class ProjectService {
     }
 
     public boolean createProject(String userId, ProjectDTO projectDTO) {
-        // Map the DTO to the Project entity
-        Project project = ProjectTaskMapper.mapToProject(projectDTO, userId);
+        try {
+            Project project = ProjectTaskMapper.mapToProject(projectDTO, userId);
+            projectRepository.save(project);
 
-        // Save the project to the repository
-        projectRepository.save(project);
+            logService.logInfo("Project created successfully", userId, project.getId(), "Project",
+                    Map.of("name", project.getName(), "description", project.getDescription()));
 
-        return true; // Return success
+            return true;
+        } catch (Exception e) {
+            logService.logError("Error creating project", userId, null, "Project",
+                    Map.of("error", e.getMessage()), e);
+            throw e;
+        }
     }
 
     public boolean updateProject(String userId, String projectId, Project updatedProject) {
-        Project existingProject = getProjectByIdAndUserId(userId, projectId);
-        ProjectTaskMapper.mapToProject(updatedProject, existingProject);
-        existingProject.setOwnerId(userId);
-        projectRepository.save(existingProject);
-        return true;
+        try {
+            Project existingProject = getProjectByIdAndUserId(userId, projectId);
+            ProjectTaskMapper.mapToProject(updatedProject, existingProject);
+            existingProject.setOwnerId(userId);
+            projectRepository.save(existingProject);
+
+            logService.logInfo("Project updated successfully", userId, projectId, "Project",
+                    Map.of("name", updatedProject.getName(), "status", updatedProject.getStatus()));
+
+            return true;
+        } catch (Exception e) {
+            logService.logError("Error updating project", userId, projectId, "Project",
+                    Map.of("error", e.getMessage()), e);
+            throw e;
+        }
     }
 
-    public boolean deleteProject(String userId, String projectId) {
+    public boolean deleteProject(String userId, String projectId) throws IllegalAccessException {
         Project existingProject = getProjectByIdAndUserId(userId, projectId);
 
-        AuditLog auditLog = new AuditLog();
-        auditLog.setEntityType("Project");
-        auditLog.setEntityId(existingProject.getId());
-        auditLog.setUserId(userId);
-        auditLog.setDeletedAt(LocalDateTime.now());
+        try {
+            AuditLog auditLog = new AuditLog();
+            auditLog.setEntityType("Project");
+            auditLog.setEntityId(existingProject.getId());
+            auditLog.setUserId(userId);
+            auditLog.setDeletedAt(LocalDateTime.now());
 
-        Map<String, Object> originalData = new HashMap<>();
-        for (Field field : Project.class.getDeclaredFields()) {
-            field.setAccessible(true);
-            try {
+            Map<String, Object> originalData = new HashMap<>();
+            for (Field field : Project.class.getDeclaredFields()) {
+                field.setAccessible(true);
                 Object value = field.get(existingProject);
 
                 if (value instanceof Enum<?>) {
@@ -93,16 +108,19 @@ public class ProjectService {
                 }
 
                 originalData.put(field.getName(), value);
-            } catch (IllegalAccessException e) {
-                logger.error("Error accessing field {} in project {}", field.getName(), existingProject.getId(), e);
             }
-        }
-        auditLog.setOriginalData(originalData);
-        auditLogRepository.save(auditLog);
 
-        projectRepository.delete(existingProject);
-        logger.info("User {} deleted project {}", userId, projectId);
-        return true;
+            auditLog.setOriginalData(originalData);
+            auditLogRepository.save(auditLog);
+
+            projectRepository.delete(existingProject);
+            logService.logInfo("Project deleted", userId, projectId, "Project", originalData);
+
+            return true;
+        } catch (Exception e) {
+            logService.logError("Error deleting project", userId, projectId, "Project", Map.of("error", e.getMessage()), e);
+            throw e;
+        }
     }
     private String extractId(Object obj) {
         try {
