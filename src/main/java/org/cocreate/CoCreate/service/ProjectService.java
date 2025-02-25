@@ -3,27 +3,35 @@ package org.cocreate.CoCreate.service;
 import org.cocreate.CoCreate.exception.EntityNotFoundException;
 import org.cocreate.CoCreate.model.dto.ProjectDTO;
 import org.cocreate.CoCreate.model.dto.TaskDTO;
+import org.cocreate.CoCreate.model.entity.AuditLog;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
 import org.cocreate.CoCreate.model.entity.User;
+import org.cocreate.CoCreate.repository.AuditRepository;
 import org.cocreate.CoCreate.repository.ProjectRepository;
 import org.cocreate.CoCreate.utility.mapper.ProjectTaskMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.lang.reflect.Field;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 @Service
 public class ProjectService {
+    private final Logger logger = LoggerFactory.getLogger(ProjectService.class);
+
     private final ProjectRepository projectRepository;
     private final UserService userService;
-    private final ProjectTaskMapper projectTaskMapper;
+    private final AuditRepository auditLogRepository;
 
-    public ProjectService(ProjectRepository projectRepository, UserService userService, ProjectTaskMapper projectTaskMapper) {
+    public ProjectService(ProjectRepository projectRepository, UserService userService, AuditRepository auditLogRepository) {
         this.projectRepository = projectRepository;
         this.userService = userService;
-        this.projectTaskMapper = projectTaskMapper;
+        this.auditLogRepository = auditLogRepository;
     }
 
     public List<Project> getProjectsByUserId(String userId) {
@@ -43,7 +51,7 @@ public class ProjectService {
 
     public boolean createProject(String userId, ProjectDTO projectDTO) {
         // Map the DTO to the Project entity
-        Project project = projectTaskMapper.mapToProject(projectDTO, userId);
+        Project project = ProjectTaskMapper.mapToProject(projectDTO, userId);
 
         // Save the project to the repository
         projectRepository.save(project);
@@ -61,14 +69,49 @@ public class ProjectService {
 
     public boolean deleteProject(String userId, String projectId) {
         Project existingProject = getProjectByIdAndUserId(userId, projectId);
+
+        AuditLog auditLog = new AuditLog();
+        auditLog.setEntityType("Project");
+        auditLog.setEntityId(existingProject.getId());
+        auditLog.setUserId(userId);
+        auditLog.setDeletedAt(LocalDateTime.now());
+
+        Map<String, Object> originalData = new HashMap<>();
+        for (Field field : Project.class.getDeclaredFields()) {
+            field.setAccessible(true);
+            try {
+                Object value = field.get(existingProject);
+
+                if (value instanceof Enum<?>) {
+                    value = ((Enum<?>) value).name();
+                } else if (value instanceof LocalDateTime) {
+                    value = value.toString();
+                } else if (value instanceof List<?>) {
+                    value = ((List<?>) value).stream()
+                            .map(item -> extractId(item))
+                            .toList();
+                }
+
+                originalData.put(field.getName(), value);
+            } catch (IllegalAccessException e) {
+                logger.error("Error accessing field {} in project {}", field.getName(), existingProject.getId(), e);
+            }
+        }
+        auditLog.setOriginalData(originalData);
+        auditLogRepository.save(auditLog);
+
         projectRepository.delete(existingProject);
+        logger.info("User {} deleted project {}", userId, projectId);
         return true;
     }
-
-
-    public List<Task> getTasksByProject(String userId, String projectId) {
-        Project project = getProjectByIdAndUserId(userId, projectId);
-        return project.getTasks();
+    private String extractId(Object obj) {
+        try {
+            Field idField = obj.getClass().getDeclaredField("id");
+            idField.setAccessible(true);
+            return (String) idField.get(obj); // Extract and return ID
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            return obj.toString(); // Fallback: Store object as string if no ID field
+        }
     }
 
     public Task getTaskForEdit(String userId, String projectId, String taskId) {
