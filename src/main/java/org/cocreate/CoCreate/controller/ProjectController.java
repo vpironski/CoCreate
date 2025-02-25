@@ -2,7 +2,7 @@ package org.cocreate.CoCreate.controller;
 
 import org.cocreate.CoCreate.exception.BadRequestException;
 import org.cocreate.CoCreate.model.dto.ProjectDTO;
-import org.cocreate.CoCreate.model.dto.ResponseMessage;
+import org.cocreate.CoCreate.model.record.ResponseMessage;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
 import org.cocreate.CoCreate.service.ProjectService;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/{userId}/projects")
+@RequestMapping("/api/{userId}/dashboard")
 public class ProjectController {
     private final ProjectService projectService;
 
@@ -20,18 +20,18 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
-    @GetMapping("/dashboard")
+    @GetMapping("")
     public ResponseEntity<List<Project>> viewProjects(@PathVariable String userId) {
         return ResponseEntity.ok(projectService.getProjectsByUserId(userId));
     }
 
-    @GetMapping("/dashboard/{projectId}")
+    @GetMapping("/{projectId}")
     public ResponseEntity<Project> viewProject(@PathVariable String userId, @PathVariable String projectId) {
         return ResponseEntity.ok(projectService.getProjectByIdAndUserId(userId, projectId));
     }
 
     @GetMapping("/createProject")
-    public ResponseEntity<ProjectDTO> getEmptyProjectTemplate(@PathVariable String userId) {
+    public ResponseEntity<ProjectDTO> getEmptyProjectTemplate() {
         return ResponseEntity.ok(new ProjectDTO());
     }
 
@@ -52,7 +52,7 @@ public class ProjectController {
     public ResponseEntity<ResponseMessage> editProject(
             @PathVariable String userId,
             @PathVariable String projectId,
-            @RequestBody Project updatedProject) {
+            @RequestBody(required = false) Project updatedProject) {
         if (!projectService.updateProject(userId, projectId, updatedProject)) {
             throw new BadRequestException("Failed to update project!");
         }

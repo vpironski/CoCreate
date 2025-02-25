@@ -52,6 +52,7 @@ public class ProjectService {
     public boolean updateProject(String userId, String projectId, Project updatedProject) {
         Project existingProject = getProjectByIdAndUserId(userId, projectId);
         ProjectTaskMapper.mapToProject(updatedProject, existingProject);
+        existingProject.setOwnerId(userId);
         projectRepository.save(existingProject);
         return true;
     }

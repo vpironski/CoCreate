@@ -1,8 +1,8 @@
 package org.cocreate.CoCreate.controller;
 
 import org.cocreate.CoCreate.exception.BadRequestException;
-import org.cocreate.CoCreate.model.dto.LoginResponse;
-import org.cocreate.CoCreate.model.dto.ResponseMessage;
+import org.cocreate.CoCreate.model.record.LoginResponse;
+import org.cocreate.CoCreate.model.record.ResponseMessage;
 import org.cocreate.CoCreate.model.dto.UserRegisterDTO;
 import org.cocreate.CoCreate.model.entity.User;
 import org.cocreate.CoCreate.model.record.AuthRequest;
