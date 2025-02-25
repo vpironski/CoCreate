@@ -1,22 +1,23 @@
 package org.cocreate.CoCreate.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.cocreate.CoCreate.model.enums.Priority;
+import org.cocreate.CoCreate.model.enums.TaskStatus;
 
 import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-@Setter
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class ProjectDTO {
+@Setter
+public class TaskDTO {
+    private String title = "";
 
-    private String name = "";
     private String description = "";
+
+    private List<String> userIds = new ArrayList<>();
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime startDate = LocalDateTime.now();
@@ -24,16 +25,6 @@ public class ProjectDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime endDate = LocalDateTime.now();
 
-    private String departmentId = "";
+    private List<String> dependencies = new ArrayList<>();
 
-    private Map<String, Object> workflow = Map.of();
-
-    private Map<String, Object> settings = Map.of();
-
-    private Double budget = 0.0;
-
-    private String parentProjectId = "";
-
-    private Map<String, Object> customFields = Map.of();
 }
-

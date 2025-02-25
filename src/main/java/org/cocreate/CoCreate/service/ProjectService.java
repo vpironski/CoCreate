@@ -2,6 +2,7 @@ package org.cocreate.CoCreate.service;
 
 import org.cocreate.CoCreate.exception.EntityNotFoundException;
 import org.cocreate.CoCreate.model.dto.ProjectDTO;
+import org.cocreate.CoCreate.model.dto.TaskDTO;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
 import org.cocreate.CoCreate.model.entity.User;
@@ -9,6 +10,7 @@ import org.cocreate.CoCreate.repository.ProjectRepository;
 import org.cocreate.CoCreate.utility.mapper.ProjectTaskMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -63,31 +65,43 @@ public class ProjectService {
         return true;
     }
 
-    public Task getTaskForEdit(String userId, String projectId, String taskId) {
-        Project project = getProjectByIdAndUserId(userId, projectId);
-        return project.getTasks().stream()
-                .filter(task -> task.getId().equals(taskId))
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Task not found in project: " + project.getName() + " !"));
-    }
-
-    public boolean createTask(String userId, String projectId, Task task) {
-        Project project = getProjectByIdAndUserId(userId, projectId);
-        task.setId(UUID.randomUUID().toString());
-        project.getTasks().add(task);
-        projectRepository.save(project);
-        return true;
-    }
 
     public List<Task> getTasksByProject(String userId, String projectId) {
         Project project = getProjectByIdAndUserId(userId, projectId);
         return project.getTasks();
     }
 
+    public Task getTaskForEdit(String userId, String projectId, String taskId) {
+        Project project = getProjectByIdAndUserId(userId, projectId);
+        return project.getTasks().stream()
+                .filter(task -> task.getId().equals(taskId))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Task not found in project: " + project.getName() + " !"));
+    }
+
+    public boolean createTask(String userId, String projectId, TaskDTO taskDTO) {
+        Project project = getProjectByIdAndUserId(userId, projectId);
+
+        List<User> assignedUsers = taskDTO.getUserIds().stream()
+                .map(userService::getUserById)
+                .toList();
+
+        Task task = ProjectTaskMapper.mapToTask(taskDTO, assignedUsers);
+
+        project.getTasks().add(task);
+        projectRepository.save(project);
+        return true;
+    }
+
     public boolean updateTask(String userId, String projectId, String taskId, Task updatedTask) {
         Project project = getProjectByIdAndUserId(userId, projectId);
-        Task existingTask = getTaskForEdit(userId, projectId, taskId);
+        List<Task> tasks = project.getTasks();
+
+        Task existingTask = tasks.stream()
+                .filter(task -> task.getId().equals(taskId))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Task not found in project: " + project.getName() + " !"));
+
         ProjectTaskMapper.mapToTask(updatedTask, existingTask);
         projectRepository.save(project);
         return true;
@@ -95,10 +109,14 @@ public class ProjectService {
 
     public boolean deleteTask(String userId, String projectId, String taskId) {
         Project project = getProjectByIdAndUserId(userId, projectId);
-        boolean removed = project.getTasks().removeIf(task -> task.getId().equals(taskId));
+        List<Task> tasks = project.getTasks();
+
+        boolean removed = tasks.removeIf(task -> task.getId().equals(taskId));
+
         if (!removed) {
             throw new EntityNotFoundException("Task not found in project: " + project.getName() + " !");
         }
+
         projectRepository.save(project);
         return true;
     }

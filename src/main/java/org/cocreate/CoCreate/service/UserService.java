@@ -1,8 +1,7 @@
 package org.cocreate.CoCreate.service;
 
 import org.cocreate.CoCreate.exception.UserException;
-import org.cocreate.CoCreate.model.dto.UserLoginDTO;
-import org.cocreate.CoCreate.model.dto.UserRegisterDTO;
+import org.cocreate.CoCreate.model.record.UserRegisterDTO;
 import org.cocreate.CoCreate.model.entity.User;
 import org.cocreate.CoCreate.model.enums.UserRoleEnum;
 import org.cocreate.CoCreate.repository.UserRepository;

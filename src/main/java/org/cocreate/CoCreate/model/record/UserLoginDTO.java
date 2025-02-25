@@ -1,3 +1,3 @@
-package org.cocreate.CoCreate.model.dto;
+package org.cocreate.CoCreate.model.record;
 
 public record UserLoginDTO(String email, String password) {}

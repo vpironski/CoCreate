@@ -1,12 +1,16 @@
 package org.cocreate.CoCreate.utility.mapper;
 
 import org.cocreate.CoCreate.model.dto.ProjectDTO;
+import org.cocreate.CoCreate.model.dto.TaskDTO;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
+import org.cocreate.CoCreate.model.entity.User;
 import org.cocreate.CoCreate.model.enums.Priority;
 import org.cocreate.CoCreate.model.enums.ProjectStatus;
+import org.cocreate.CoCreate.model.enums.TaskStatus;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,8 +25,6 @@ public class ProjectTaskMapper {
         project.setDescription(projectDTO.getDescription());
         project.setStartDate(projectDTO.getStartDate());
         project.setEndDate(projectDTO.getEndDate());
-        project.setCreatedAt(projectDTO.getCreatedAt());
-        project.setUpdatedAt(projectDTO.getUpdatedAt());
         project.setDepartmentId(projectDTO.getDepartmentId());
         project.setWorkflow(projectDTO.getWorkflow());
         project.setSettings(projectDTO.getSettings());
@@ -33,6 +35,8 @@ public class ProjectTaskMapper {
         // Set default values or values that are not in the DTO
         project.setId(UUID.randomUUID().toString());
         project.setOwnerId(userId); // Set the ownerId from the provided userId
+        project.setCreatedAt(LocalDateTime.now());
+        project.setUpdatedAt(LocalDateTime.now());
         project.setStatus(ProjectStatus.DRAFT); // Set status to DRAFT
         project.setPriority(Priority.MEDIUM); // Set default priority to MEDIUM
         project.setProgress(0); // Set default progress to 0
@@ -113,6 +117,23 @@ public class ProjectTaskMapper {
         if (source.getCustomFields() != null && !source.getCustomFields().isEmpty()) {
             target.setCustomFields(source.getCustomFields());
         }
+    }
+
+    public static Task mapToTask(TaskDTO taskDTO, List<User> assignedUsers) {
+        Task task = new Task();
+
+        task.setId(UUID.randomUUID().toString());
+        task.setTitle(taskDTO.getTitle());
+        task.setDescription(taskDTO.getDescription());
+        task.setStartDate(taskDTO.getStartDate());
+        task.setEndDate(taskDTO.getEndDate());
+        task.setDependencies(taskDTO.getDependencies());
+        task.setAssignedUsers(assignedUsers);
+
+        task.setStatus(TaskStatus.IN_PROGRESS);
+        task.setPriority(Priority.MEDIUM);
+
+        return task;
     }
 
     public static void mapToTask(Task source, Task target) {
