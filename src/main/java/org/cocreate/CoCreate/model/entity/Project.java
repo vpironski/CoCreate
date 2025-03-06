@@ -47,9 +47,6 @@ public class Project {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    @Field("department")
-    private String departmentId = "";
-
     @Field("owner")
     private String ownerId = "";
 
@@ -63,9 +60,6 @@ public class Project {
     private Integer progress = 0;
 
     private List<String> tags = List.of();
-
-    @Field("related_tickets_id")
-    private List<String> relatedTicketsId = List.of();
 
     @Field("parent_project_id")
     private String parentProjectId = "";

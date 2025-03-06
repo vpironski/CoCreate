@@ -19,6 +19,7 @@ public class Company {
 
     private String name;
 
+    //cocreate.domain/.../
     private String domain;
 
     @Field("departments")
