@@ -2,7 +2,6 @@ package org.cocreate.CoCreate.utility;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
@@ -16,14 +15,14 @@ public class JwtUtils {
     private final String key = System.getenv("JWT_SECRET_KEY");
 
     private final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(key.getBytes(StandardCharsets.UTF_8));
-//    private final long EXPIRATION_TIME = 3600000 * 24;
+    private final long EXPIRATION_TIME = 3600000 * 3;
 
     // Generate a JWT token with expiration time
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-//                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(SECRET_KEY)
                 .compact();
     }
@@ -53,10 +52,10 @@ public class JwtUtils {
                 .getBody();
     }
 
-    // Check if the token has expired
-//    private boolean isTokenExpired(String token) {
-//        return extractExpiration(token).before(new Date());
-//    }
+//     Check if the token has expired
+    private boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
 
     // Validate the token (check if it's valid and matches the user)
     public boolean validateToken(String token, String username) {
@@ -64,8 +63,7 @@ public class JwtUtils {
         System.out.println("SECRET_KEY: " + SECRET_KEY);
 
         final String tokenUsername = extractUsername(token);
-//        return (tokenUsername.equals(username) && !isTokenExpired(token));
-        return (tokenUsername.equals(username));
+        return (tokenUsername.equals(username) && !isTokenExpired(token));
     }
 }
 
