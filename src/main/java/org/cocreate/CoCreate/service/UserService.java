@@ -32,6 +32,11 @@ public class UserService {
                 .orElseThrow(() -> new UserException("User with email " + email + " not found"));
     }
 
+    public User gerUserByUsername(String username){
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserException("User with username" + username + "not found"));
+    }
+
     public boolean createUser(UserRegisterDTO userDto) {
         if (userRepository.findByEmail(userDto.email()).isPresent()) {
             throw new UserException("Email is already used");

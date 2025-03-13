@@ -42,7 +42,9 @@ public class UserController {
 
         String message = "User registered successfully";
 
-        LoginResponse loginResponse = new LoginResponse(message, token);
+        String userId = user.getId();
+
+        LoginResponse loginResponse = new LoginResponse(message, token, userId);
         return ResponseEntity.ok(loginResponse);
     }
 
@@ -57,7 +59,13 @@ public class UserController {
         String message = "User logged in successfully";
         String token = jwtUtils.generateToken(userDetails.getUsername());
 
-        LoginResponse loginResponse = new LoginResponse(message, token);
+        User user = userService.gerUserByUsername(request.username());
+
+        if (user == null) {
+            throw new BadRequestException("User not found");
+        }
+
+        LoginResponse loginResponse = new LoginResponse(message, token, user.getId());
         return ResponseEntity.ok(loginResponse);
     }
 
