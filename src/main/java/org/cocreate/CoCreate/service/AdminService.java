@@ -43,13 +43,11 @@ public class AdminService {
         restoredProject.setStatus(ProjectStatus.valueOf((String) originalData.get("status")));
         restoredProject.setStartDate(LocalDateTime.parse((String) originalData.get("startDate")));
         restoredProject.setEndDate(LocalDateTime.parse((String) originalData.get("endDate")));
-        restoredProject.setDepartmentId((String) originalData.get("departmentId"));
         restoredProject.setOwnerId((String) originalData.get("ownerId"));
         restoredProject.setPriority(Priority.valueOf((String) originalData.get("priority")));
         restoredProject.setProgress((Integer) originalData.get("progress"));
 
         restoredProject.setTags((List<String>) originalData.get("tags"));
-        restoredProject.setRelatedTicketsId((List<String>) originalData.get("relatedTicketsId"));
         restoredProject.setParentProjectId((String) originalData.get("parentProjectId"));
         restoredProject.setBudget(Double.valueOf(originalData.get("budget").toString()));
         restoredProject.setResources((Map<String, Object>) originalData.get("resources"));

@@ -25,7 +25,6 @@ public class ProjectTaskMapper {
         project.setDescription(projectDTO.getDescription());
         project.setStartDate(projectDTO.getStartDate());
         project.setEndDate(projectDTO.getEndDate());
-        project.setDepartmentId(projectDTO.getDepartmentId());
         project.setWorkflow(projectDTO.getWorkflow());
         project.setSettings(projectDTO.getSettings());
         project.setBudget(projectDTO.getBudget());
@@ -41,7 +40,6 @@ public class ProjectTaskMapper {
         project.setPriority(Priority.MEDIUM); // Set default priority to MEDIUM
         project.setProgress(0); // Set default progress to 0
         project.setTags(List.of()); // Set empty list for tags if none are provided
-        project.setRelatedTicketsId(List.of()); // Set empty list for related tickets
         project.setResources(Map.of()); // Set empty map for resources
         project.setActivityLog(List.of()); // Set empty list for activity log
         project.setTeamMembers(List.of()); // Set empty list for team members
@@ -75,9 +73,6 @@ public class ProjectTaskMapper {
         if (source.getUpdatedAt() != null) {
             target.setUpdatedAt(source.getUpdatedAt());
         }
-        if (source.getDepartmentId() != null) {
-            target.setDepartmentId(source.getDepartmentId());
-        }
         if (source.getOwnerId() != null) {
             target.setOwnerId(source.getOwnerId());
         }
@@ -98,9 +93,6 @@ public class ProjectTaskMapper {
         }
         if (source.getTags() != null && !source.getTags().isEmpty()) {
             target.setTags(source.getTags());
-        }
-        if (source.getRelatedTicketsId() != null && !source.getRelatedTicketsId().isEmpty()) {
-            target.setRelatedTicketsId(source.getRelatedTicketsId());
         }
         if (source.getParentProjectId() != null && !source.getParentProjectId().isEmpty()) {
             target.setParentProjectId(source.getParentProjectId());
