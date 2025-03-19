@@ -1,5 +1,7 @@
 package org.cocreate.CoCreate.controller;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.cocreate.CoCreate.exception.BadRequestException;
 import org.cocreate.CoCreate.model.record.LoginResponse;
 import org.cocreate.CoCreate.model.record.ResponseMessage;
@@ -32,7 +34,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<LoginResponse> registerUser(@RequestBody UserRegisterDTO userDto) {
+    public ResponseEntity<LoginResponse> registerUser(@RequestBody UserRegisterDTO userDto, HttpServletResponse response) {
         if (!userService.createUser(userDto)) {
             throw new BadRequestException("Registration failed");
         }
@@ -40,17 +42,23 @@ public class UserController {
 
         String token = jwtUtils.generateToken(user.getUsername());
 
+        Cookie cookie = new Cookie("token", token);
+        cookie.setHttpOnly(true);  // Prevent access via JavaScript
+        cookie.setPath("/");  // Make the cookie accessible to all paths
+        cookie.setMaxAge(60 * 60);  // Set cookie expiry (1 hour)
+        response.addCookie(cookie);  // Add the cookie to the response
+
         String message = "User registered successfully";
 
         String userId = user.getId();
 
-        LoginResponse loginResponse = new LoginResponse(message, token, userId);
+        LoginResponse loginResponse = new LoginResponse(message, userId);
         return ResponseEntity.ok(loginResponse);
     }
 
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody AuthRequest request) {
+    public ResponseEntity<LoginResponse> login(@RequestBody AuthRequest request, HttpServletResponse response) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.username(), request.password())
         );
@@ -58,15 +66,33 @@ public class UserController {
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(request.username());
         String message = "User logged in successfully";
         String token = jwtUtils.generateToken(userDetails.getUsername());
+        Cookie cookie = new Cookie("token", token);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60);
+        response.addCookie(cookie);
 
         User user = userService.gerUserByUsername(request.username());
 
         if (user == null) {
-            throw new BadRequestException("User not found");
+            throw new BadRequestException("Invalid username or password");
         }
+        String userId = user.getId();
 
-        LoginResponse loginResponse = new LoginResponse(message, token, user.getId());
+        LoginResponse loginResponse = new LoginResponse(message, userId);
         return ResponseEntity.ok(loginResponse);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ResponseMessage> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("token", "");
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        cookie.setAttribute("SameSite", "Strict");
+        response.addCookie(cookie);
+
+
+        return ResponseEntity.ok(new ResponseMessage("User logged out successfully"));
     }
 
     @GetMapping("/{userId}")

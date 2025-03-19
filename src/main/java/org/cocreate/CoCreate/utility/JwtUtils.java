@@ -59,9 +59,6 @@ public class JwtUtils {
 
     // Validate the token (check if it's valid and matches the user)
     public boolean validateToken(String token, String username) {
-        System.out.println("JWT Token: " + token);
-        System.out.println("SECRET_KEY: " + SECRET_KEY);
-
         final String tokenUsername = extractUsername(token);
         return (tokenUsername.equals(username) && !isTokenExpired(token));
     }

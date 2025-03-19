@@ -1,5 +1,6 @@
 package org.cocreate.CoCreate.utility;
 
+import jakarta.servlet.http.Cookie;
 import org.cocreate.CoCreate.service.CustomUserDetailsService;
 import org.cocreate.CoCreate.utility.JwtUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,7 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
     private final CustomUserDetailsService customUserDetailsService;
 
-    private final Map<String, UserDetails> userDetailsCache = new ConcurrentHashMap<String, UserDetails>();
+    private final Map<String, UserDetails> userDetailsCache = new ConcurrentHashMap<>();
 
     public JwtAuthenticationFilter(JwtUtils jwtUtils, CustomUserDetailsService customUserDetailsService) {
         this.jwtUtils = jwtUtils;
@@ -36,14 +37,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        String authorizationHeader = request.getHeader("Authorization");
-        System.out.println(authorizationHeader);
         String jwt = null;
         String username = null;
 
-        // Extract JWT token from the header
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7);
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("token".equals(cookie.getName())) {
+                    jwt = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        // If we found a JWT, extract the username
+        if (jwt != null) {
             username = jwtUtils.extractUsername(jwt);
         }
 

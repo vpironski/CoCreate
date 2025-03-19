@@ -2,59 +2,53 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8080/api';
 
-function isBrowser() {
-    return typeof window !== 'undefined';
+const api = axios.create({
+    baseURL: API_URL,
+    withCredentials: true, // Ensures cookies (JWT) are sent with requests
+    headers: {
+        'Content-Type': 'application/json'
+    }
+});
+
+function handleApiError(error) {
+    return error.response?.data?.error || 'An unexpected error occurred';
 }
+
 
 export async function registerUser(username, email, password) {
     try {
-        const response = await axios.post(`${API_URL}/user/register`, { username, email, password });
-        const { token, userId } = response.data;
-
-        if (isBrowser()) {
-            localStorage.setItem('jwtToken', token);
-            localStorage.setItem('userId', userId);
-        }
-
-        return { token, userId };
+        const response = await api.post('/user/register', { username, email, password });
+        localStorage.setItem('userId', response.data.userId);
+        return { message: response.data.message, userId: response.data.userId };
     } catch (error) {
-        console.error('Error registering user:', error.response?.data || error.message);
-        throw new Error(error.response?.data?.message || 'Registration failed');
+        throw new Error(handleApiError(error));
     }
 }
 
 export async function loginUser(username, password) {
     try {
-        const response = await axios.post(`${API_URL}/user/login`, { username, password });
-        const { token, userId } = response.data;
-
-        if (isBrowser()) {
-            localStorage.setItem('jwtToken', token);
-            localStorage.setItem('userId', userId);
-        }
-
-        return { token, userId };
+        const response = await api.post('/user/login', { username, password });
+        localStorage.setItem('userId', response.data.userId);
+        return { message: response.data.message, userId: response.data.userId };
     } catch (error) {
-        console.error('Error logging in:', error.response?.data || error.message);
-        throw new Error(error.response?.data?.message || 'Login failed');
+        throw new Error(handleApiError(error));
     }
 }
 
-export function logoutUser() {
-    if (isBrowser()) {
-        localStorage.removeItem('jwtToken');
+export async function logoutUser() {
+    try {
+        await api.post('/user/logout');
         localStorage.removeItem('userId');
+    } catch (error) {
+        console.error("Logout API error:", error.response ? error.response.data : error.message);
+        throw new Error(handleApiError(error));
     }
-}
-
-export function getToken() {
-    return isBrowser() ? localStorage.getItem('jwtToken') : null;
 }
 
 export function getUserId() {
-    return isBrowser() ? localStorage.getItem('userId') : null;
+    return localStorage.getItem('userId');
 }
 
 export function isAuthenticated() {
-    return !!getToken();
+    return !!getUserId();
 }
