@@ -4,7 +4,7 @@ const API_URL = 'http://localhost:8080/api';
 
 const api = axios.create({
     baseURL: API_URL,
-    withCredentials: true, // Ensures cookies (JWT) are sent with requests
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json'
     }
