@@ -1,0 +1,43 @@
+services:
+  cocreate:
+    image: cocreate
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring-container
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/coCreate
+    depends_on:
+      - mongo
+    restart: always
+
+  mongo:
+    image: mongo:7.0
+    container_name: mongo-container
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=coCreate
+    volumes:
+      - mongo_data:/data/db
+
+  frontend:
+    build:
+      context: ./svelte
+      dockerfile: Dockerfile
+    container_name: svelte-container
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./svelte:/app
+      - /app/node_modules
+    depends_on:
+      - cocreate
+    restart: always
+
+volumes:
+  mongo_data:
