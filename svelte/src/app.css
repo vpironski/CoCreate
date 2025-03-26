@@ -1,3 +1,13 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+@layer base {
+    :root {
+        @apply text-teal-900 bg-gray-200;
+    }
+
+    .dark {
+        @apply text-white bg-gray-900;
+    }
+}

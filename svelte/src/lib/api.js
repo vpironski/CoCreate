@@ -14,12 +14,15 @@ function handleApiError(error) {
     return error.response?.data?.error || 'An unexpected error occurred';
 }
 
-
 export async function registerUser(username, email, password) {
     try {
         const response = await api.post('/user/register', { username, email, password });
         localStorage.setItem('userId', response.data.userId);
-        return { message: response.data.message, userId: response.data.userId };
+        localStorage.setItem('username', username);
+        return {
+            message: response.data.message,
+            userId: response.data.userId
+        };
     } catch (error) {
         throw new Error(handleApiError(error));
     }
@@ -29,10 +32,18 @@ export async function loginUser(username, password) {
     try {
         const response = await api.post('/user/login', { username, password });
         localStorage.setItem('userId', response.data.userId);
-        return { message: response.data.message, userId: response.data.userId };
+        localStorage.setItem('username', username);
+        return {
+            message: response.data.message,
+            userId: response.data.userId
+        };
     } catch (error) {
         throw new Error(handleApiError(error));
     }
+}
+
+export function getUsername() {
+    return localStorage.getItem('username');
 }
 
 export async function logoutUser() {
