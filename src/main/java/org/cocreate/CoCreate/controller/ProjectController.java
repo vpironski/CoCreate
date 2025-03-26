@@ -34,12 +34,12 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.getProjectByIdAndUserId(userId, projectId));
     }
 
-    @GetMapping("/createProject")
+    @GetMapping("/create-project")
     public ResponseEntity<ProjectDTO> getEmptyProjectTemplate() {
         return ResponseEntity.ok(new ProjectDTO());
     }
 
-    @PostMapping("/createProject")
+    @PostMapping("/create-project")
     public ResponseEntity<ResponseMessage> createProject(@PathVariable String userId, @RequestBody ProjectDTO dto) {
         if (!projectService.createProject(userId, dto)) {
             throw new BadRequestException("Failed to create project!");
@@ -47,12 +47,12 @@ public class ProjectController {
         return ResponseEntity.ok(new ResponseMessage("Project created successfully!"));
     }
 
-    @GetMapping("/editProject/{projectId}")
+    @GetMapping("/edit-project/{projectId}")
     public ResponseEntity<Project> getProjectForEdit(@PathVariable String userId, @PathVariable String projectId) {
         return ResponseEntity.ok(projectService.getProjectForEdit(userId, projectId));
     }
 
-    @PutMapping("/editProject/{projectId}")
+    @PutMapping("/edit-project/{projectId}")
     public ResponseEntity<ResponseMessage> editProject(
             @PathVariable String userId,
             @PathVariable String projectId,
@@ -63,7 +63,7 @@ public class ProjectController {
         return ResponseEntity.ok(new ResponseMessage("Project updated successfully!"));
     }
 
-    @DeleteMapping("/deleteProject/{projectId}")
+    @DeleteMapping("/delete-project/{projectId}")
     public ResponseEntity<ResponseMessage> deleteProject(@PathVariable String userId,
                                                          @PathVariable String projectId) throws IllegalAccessException {
         if (!projectService.deleteProject(userId, projectId)) {

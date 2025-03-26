@@ -19,7 +19,7 @@ public class AdminController {
         this.adminService = adminService;
     }
 
-    @PostMapping("{userId}/restoreProject/{projectId}")
+    @PostMapping("{userId}/restore-project/{projectId}")
     public ResponseEntity<ResponseMessage> restoreProject(@PathVariable String userId, @PathVariable String projectId) {
         if (!adminService.restoreProject(userId, projectId)) {
             throw new BadRequestException("Failed to restore project!");
