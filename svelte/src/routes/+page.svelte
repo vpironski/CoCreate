@@ -1,5 +1,5 @@
 <script>
-    import { loginUser, registerUser, isAuthenticated, getUserId } from '$lib/api';
+    import { loginUser, registerUser} from '$lib/api';
     import { goto } from '$app/navigation';
 
     let username = '';
@@ -35,24 +35,23 @@
 </script>
 
 
-<div class="min-h-screen flex flex-col md:flex-row">
-    <!-- Left Section - Quote (teal Background) -->
-    <div class="w-full md:w-1/2 bg-gray-200 dark:bg-gray-900 p-8 flex items-center justify-center">
-        <div class="left-section">
-            <div class="max-w-md space-y-8">
+<div class="min-h-screen bg-teal-900 flex flex-col md:flex-row">
+    <!-- Left Section - Mobile (Full Width) / Desktop (Half Width) -->
+    <div class="w-full md:w-1/2 bg-gray-200 dark:bg-gray-900 p-6 md:p-8 flex items-center justify-center">
+        <div class="max-w-md space-y-6 md:space-y-8">
                 <!-- CoCreate Title -->
-                <h1 class="text-8xl font-bold text-orange-500 dark:text-orange-300">
+                <h1 class="text-5xl md:text-8xl font-bold text-orange-500 dark:text-orange-300 text-center md:text-left">
                     CoCreate
                 </h1>
 
                 <!-- Main Quote -->
-                <blockquote class="text-6xl font-bold text-teal-900 dark:text-teal-500 leading-tight">
+                <blockquote class="text-3xl md:text-6xl font-bold text-teal-900 dark:text-teal-500 leading-tight text-center md:text-left">
                     "Be the cause something to <span class="text-orange-500 dark:text-orange-300">exist</span>."
                 </blockquote>
 
 
                 <!-- Why Choose Us Section -->
-                <div class="space-y-6">
+                <div class="hidden md:block space-y-6">
                     <h2 class="text-xl font-semibold text-teal-700 dark:text-teal-200">
                         Why choose us?
                     </h2>
@@ -90,14 +89,12 @@
                     </div>
                 </div>
             </div>
-        </div>
-
     </div>
 
     <!-- Right Section - Login Form (Grey Text) -->
     <div class="w-full md:w-1/2 bg-teal-900 dark:bg-teal-50">
-        <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto h-full lg:py-0">
-            <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+        <div class="flex flex-col items-center justify-center px-4 md:px-6 py-8 md:py-0 mx-auto h-full">
+            <div class="w-full max-w-md bg-white rounded-lg shadow dark:border p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700">
                 <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
                     <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-700 md:text-2xl dark:text-gray-300">
                         {isRegistering ? 'Create Account' : 'Welcome Back'}
@@ -156,6 +153,47 @@
                             {isRegistering ? 'Create Account' : 'Sign In'}
                         </button>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="block md:hidden w-full bg-gray-200 dark:bg-teal-50">
+        <div class="flex flex-col items-center justify-center px-4 py-8 mx-auto h-full">
+            <div class="w-full max-w-md space-y-6 p-6">
+                <h2 class="text-xl font-semibold text-teal-700 dark:text-teal-200">
+                    Why choose us?
+                </h2>
+
+                <div class="space-y-6">
+                    <!-- Feature 1 -->
+                    <div class="space-y-1">
+                        <h3 class="text-lg font-medium text-teal-900 dark:text-teal-500">
+                            - Intuitive and User-friendly interface
+                        </h3>
+                        <p class="text-teal-600 dark:text-teal-200/80 text-sm">
+                            //designed with simplicity in mind
+                        </p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="space-y-1">
+                        <h3 class="text-lg font-medium text-teal-900 dark:text-teal-500">
+                            - Customizable workflows for every team
+                        </h3>
+                        <p class="text-teal-600 dark:text-teal-200/80 text-sm">
+                            //your unique project needs
+                        </p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="space-y-1">
+                        <h3 class="text-lg font-medium text-teal-900 dark:text-teal-500">
+                            - Real-time collaboration and insights
+                        </h3>
+                        <p class="text-teal-600 dark:text-teal-200/80 text-sm">
+                            //productivity with seamless communication
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
