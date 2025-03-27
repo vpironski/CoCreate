@@ -3,6 +3,7 @@ package org.cocreate.CoCreate.utility;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.cocreate.CoCreate.exception.SecurityException;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -45,22 +46,33 @@ public class JwtUtils {
 
     // Extract all claims
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            throw new SecurityException("Invalid JWT token: " + e.getMessage());
+        }
     }
 
 //     Check if the token has expired
     private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        final Date expiration = extractExpiration(token);
+        return expiration == null || expiration.before(new Date());
     }
 
     // Validate the token (check if it's valid and matches the user)
     public boolean validateToken(String token, String username) {
-        final String tokenUsername = extractUsername(token);
-        return (tokenUsername.equals(username) && !isTokenExpired(token));
+        try {
+            final String tokenUsername = extractUsername(token);
+            return (tokenUsername != null &&
+                    tokenUsername.equals(username) &&
+                    !isTokenExpired(token));
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
 
