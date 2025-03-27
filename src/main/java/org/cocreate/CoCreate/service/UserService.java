@@ -9,7 +9,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -37,7 +36,8 @@ public class UserService {
                 .orElseThrow(() -> new UserException("User with username" + username + "not found"));
     }
 
-    public boolean createUser(UserRegisterDTO userDto) {
+    public User createUser(UserRegisterDTO userDto) {
+        // Check for existing users
         if (userRepository.findByEmail(userDto.email()).isPresent()) {
             throw new UserException("Email is already used");
         }
@@ -45,18 +45,16 @@ public class UserService {
             throw new UserException("Username is already used");
         }
 
+        // Create and save new user
         User user = new User();
         user.setEmail(userDto.email());
         user.setUsername(userDto.username());
         user.setPassword(passwordEncoder.encode(userDto.password()));
-        List<UserRoleEnum> roles = new ArrayList<>();
-        roles.add(UserRoleEnum.USER);
-        user.setRoles(roles);
+        user.setRoles(List.of(UserRoleEnum.USER));
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
-        userRepository.save(user);
 
-        return true;
+        return userRepository.save(user); // Return the persisted user directly
     }
 
     public boolean updateUser(String userId, User updatedUser) {

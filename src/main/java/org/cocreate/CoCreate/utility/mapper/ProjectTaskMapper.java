@@ -25,11 +25,9 @@ public class ProjectTaskMapper {
         project.setDescription(projectDTO.getDescription());
         project.setStartDate(projectDTO.getStartDate());
         project.setEndDate(projectDTO.getEndDate());
-        project.setWorkflow(projectDTO.getWorkflow());
-        project.setSettings(projectDTO.getSettings());
-        project.setBudget(projectDTO.getBudget());
         project.setParentProjectId(projectDTO.getParentProjectId());
         project.setCustomFields(projectDTO.getCustomFields());
+        project.setPriority(projectDTO.getPriority());
 
         // Set default values or values that are not in the DTO
         project.setId(UUID.randomUUID().toString());
@@ -37,7 +35,6 @@ public class ProjectTaskMapper {
         project.setCreatedAt(LocalDateTime.now());
         project.setUpdatedAt(LocalDateTime.now());
         project.setStatus(ProjectStatus.DRAFT); // Set status to DRAFT
-        project.setPriority(Priority.MEDIUM); // Set default priority to MEDIUM
         project.setProgress(0); // Set default progress to 0
         project.setTags(List.of()); // Set empty list for tags if none are provided
         project.setResources(Map.of()); // Set empty map for resources
@@ -79,12 +76,6 @@ public class ProjectTaskMapper {
         if (source.getTeamMembers() != null && !source.getTeamMembers().isEmpty()) {
             target.setTeamMembers(source.getTeamMembers());
         }
-        if (source.getWorkflow() != null && !source.getWorkflow().isEmpty()) {
-            target.setWorkflow(source.getWorkflow());
-        }
-        if (source.getSettings() != null && !source.getSettings().isEmpty()) {
-            target.setSettings(source.getSettings());
-        }
         if (source.getPriority() != null) {
             target.setPriority(source.getPriority());
         }
@@ -96,9 +87,6 @@ public class ProjectTaskMapper {
         }
         if (source.getParentProjectId() != null && !source.getParentProjectId().isEmpty()) {
             target.setParentProjectId(source.getParentProjectId());
-        }
-        if (source.getBudget() != null && source.getBudget() != 0.0) {
-            target.setBudget(source.getBudget());
         }
         if (source.getResources() != null && !source.getResources().isEmpty()) {
             target.setResources(source.getResources());

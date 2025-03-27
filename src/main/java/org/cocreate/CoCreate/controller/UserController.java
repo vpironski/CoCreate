@@ -1,9 +1,7 @@
 package org.cocreate.CoCreate.controller;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import org.cocreate.CoCreate.exception.BadRequestException;
-import org.cocreate.CoCreate.model.record.LoginResponse;
+import org.cocreate.CoCreate.model.record.AuthResponse;
 import org.cocreate.CoCreate.model.record.ResponseMessage;
 import org.cocreate.CoCreate.model.record.UserRegisterDTO;
 import org.cocreate.CoCreate.model.entity.User;
@@ -26,7 +24,9 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService customUserDetailsService;
 
-    public UserController(UserService userService, JwtUtils jwtUtils, AuthenticationManager authenticationManager, CustomUserDetailsService customUserDetailsService) {
+    public UserController(UserService userService, JwtUtils jwtUtils,
+                          AuthenticationManager authenticationManager,
+                          CustomUserDetailsService customUserDetailsService) {
         this.userService = userService;
         this.jwtUtils = jwtUtils;
         this.authenticationManager = authenticationManager;
@@ -34,65 +34,39 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<LoginResponse> registerUser(@RequestBody UserRegisterDTO userDto, HttpServletResponse response) {
-        if (!userService.createUser(userDto)) {
-            throw new BadRequestException("Registration failed");
-        }
-        User user = userService.getUserByEmail(userDto.email());
-
+    public ResponseEntity<AuthResponse> registerUser(@RequestBody UserRegisterDTO userDto) {
+        User user = userService.createUser(userDto);
         String token = jwtUtils.generateToken(user.getUsername());
 
-        Cookie cookie = new Cookie("token", token);
-        cookie.setHttpOnly(true);  // Prevent access via JavaScript
-        cookie.setPath("/");  // Make the cookie accessible to all paths
-        cookie.setMaxAge(60 * 60);  // Set cookie expiry (1 hour)
-        response.addCookie(cookie);  // Add the cookie to the response
-
-        String message = "User registered successfully";
-
-        String userId = user.getId();
-
-        LoginResponse loginResponse = new LoginResponse(message, userId);
-        return ResponseEntity.ok(loginResponse);
+        return ResponseEntity.ok(new AuthResponse(
+                "User registered successfully",
+                user.getId(),
+                token
+        ));
     }
 
-
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody AuthRequest request, HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+        // Authenticate user
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.username(), request.password())
         );
 
+        // Generate token
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(request.username());
-        String message = "User logged in successfully";
         String token = jwtUtils.generateToken(userDetails.getUsername());
-        Cookie cookie = new Cookie("token", token);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(60 * 60);
-        response.addCookie(cookie);
 
+        // Get user ID
         User user = userService.gerUserByUsername(request.username());
-
         if (user == null) {
             throw new BadRequestException("Invalid username or password");
         }
-        String userId = user.getId();
 
-        LoginResponse loginResponse = new LoginResponse(message, userId);
-        return ResponseEntity.ok(loginResponse);
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<ResponseMessage> logout(HttpServletResponse response) {
-        Cookie cookie = new Cookie("token", "");
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        cookie.setAttribute("SameSite", "Strict");
-        response.addCookie(cookie);
-
-
-        return ResponseEntity.ok(new ResponseMessage("User logged out successfully"));
+        return ResponseEntity.ok(new AuthResponse(
+                "User logged in successfully",
+                user.getId(),
+                token
+        ));
     }
 
     @GetMapping("/{userId}")

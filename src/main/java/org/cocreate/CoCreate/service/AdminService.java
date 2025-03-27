@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -41,15 +42,14 @@ public class AdminService {
         restoredProject.setName((String) originalData.get("name"));
         restoredProject.setDescription((String) originalData.get("description"));
         restoredProject.setStatus(ProjectStatus.valueOf((String) originalData.get("status")));
-        restoredProject.setStartDate(LocalDateTime.parse((String) originalData.get("startDate")));
-        restoredProject.setEndDate(LocalDateTime.parse((String) originalData.get("endDate")));
+        restoredProject.setStartDate(LocalDate.parse((String) originalData.get("startDate")));
+        restoredProject.setEndDate(LocalDate.parse((String) originalData.get("endDate")));
         restoredProject.setOwnerId((String) originalData.get("ownerId"));
         restoredProject.setPriority(Priority.valueOf((String) originalData.get("priority")));
         restoredProject.setProgress((Integer) originalData.get("progress"));
 
         restoredProject.setTags((List<String>) originalData.get("tags"));
         restoredProject.setParentProjectId((String) originalData.get("parentProjectId"));
-        restoredProject.setBudget(Double.valueOf(originalData.get("budget").toString()));
         restoredProject.setResources((Map<String, Object>) originalData.get("resources"));
         restoredProject.setActivityLog((List<Map<String, Object>>) originalData.get("activityLog"));
         restoredProject.setCustomFields((Map<String, Object>) originalData.get("customFields"));

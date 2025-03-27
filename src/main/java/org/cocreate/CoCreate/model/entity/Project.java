@@ -11,6 +11,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +33,12 @@ public class Project {
     private List<Task> tasks = List.of();
 
     @Field("start_date")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime startDate = LocalDateTime.now();
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate startDate = LocalDate.now();
 
     @Field("end_date")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime endDate = LocalDateTime.now();
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate endDate = LocalDate.now();
 
     @Field("created_at")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
@@ -53,9 +54,6 @@ public class Project {
     @Field("team_members")
     private List<User> teamMembers = List.of();
 
-    private Map<String, Object> workflow = Map.of();
-    private Map<String, Object> settings = Map.of();
-
     private Priority priority = Priority.MEDIUM;
     private Integer progress = 0;
 
@@ -64,7 +62,6 @@ public class Project {
     @Field("parent_project_id")
     private String parentProjectId = "";
 
-    private Double budget = 0.0;
     private Map<String, Object> resources = Map.of();
 
     @Field("activity_log")

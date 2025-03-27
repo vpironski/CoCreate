@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Setter
 @Getter
@@ -23,14 +24,6 @@ public class User {
 
     @Field("password")
     private String password;
-
-    @Field("company_id")
-    //null if personal
-    private String companyId;
-
-    @Field("department")
-    //null if personal
-    private Department department;
 
     @Field("assigned_tickets")
     private List<String> assignedTickets;
@@ -50,4 +43,7 @@ public class User {
 
     @Field("updated_at")
     private LocalDateTime updatedAt;
+
+    @Field("field_settings")
+    private Map<String, Object> fieldSettings = Map.of();
 }

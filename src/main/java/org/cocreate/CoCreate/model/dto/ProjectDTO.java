@@ -5,8 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.cocreate.CoCreate.model.enums.Priority;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Map;
 
 @Setter
@@ -18,22 +19,18 @@ public class ProjectDTO {
     private String name = "";
     private String description = "";
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime startDate = LocalDateTime.now();
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate startDate = LocalDate.now();
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime endDate = LocalDateTime.now();
-
-    private String departmentId = "";
-
-    private Map<String, Object> workflow = Map.of();
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate endDate = LocalDate.now();
 
     private Map<String, Object> settings = Map.of();
-
-    private Double budget = 0.0;
 
     private String parentProjectId = "";
 
     private Map<String, Object> customFields = Map.of();
+
+    private Priority priority = Priority.MEDIUM;
 }
 

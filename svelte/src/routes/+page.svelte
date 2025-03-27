@@ -46,7 +46,7 @@
 
                 <!-- Main Quote -->
                 <blockquote class="text-3xl md:text-6xl font-bold text-teal-900 dark:text-teal-500 leading-tight text-center md:text-left">
-                    "Be the cause something to <span class="text-orange-500 dark:text-orange-300">exist</span>."
+                    "Be the reason something <span class="text-orange-500 dark:text-orange-300">exists</span>."
                 </blockquote>
 
 
