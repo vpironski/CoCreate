@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import { browser } from '$app/environment';
 
 const API_URL = 'http://localhost:8080/api';
 
@@ -11,6 +12,8 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(config => {
+    if (!browser) return config;
+
     const token = localStorage.getItem('jwtToken');
 
     if (config.url.includes('/login') || config.url.includes('/register')) {
@@ -27,13 +30,14 @@ api.interceptors.request.use(config => {
                 if (window.location.pathname !== '/') {
                     window.location.href = '/';
                 }
+                return Promise.reject(new Error('Token expired'));
             }
 
             config.headers.Authorization = `Bearer ${token}`;
         } catch (e) {
             console.error('Invalid token:', e);
-
             localStorage.removeItem('jwtToken');
+            return Promise.reject(e);
         }
     }
     return config;
@@ -42,6 +46,8 @@ api.interceptors.request.use(config => {
 });
 
 api.interceptors.response.use(response => response, error => {
+    if (!browser) return Promise.reject(error);
+
     if (error.response?.status === 401 || error.response?.status === 403) {
         localStorage.removeItem('jwtToken');
         localStorage.removeItem('userId');
@@ -75,17 +81,23 @@ export async function registerUser(username, email, password) {
 
 export async function loginUser(username, password) {
     try {
-        localStorage.removeItem('jwtToken');
+        if (browser) {
+            localStorage.removeItem('jwtToken');
+        }
 
         const response = await api.post('/user/login', { username, password });
 
-        localStorage.setItem('jwtToken', response.data.token);
-        localStorage.setItem('userId', response.data.userId);
-        localStorage.setItem('username', username);
+        if (browser) {
+            localStorage.setItem('jwtToken', response.data.token);
+            localStorage.setItem('userId', response.data.userId);
+            localStorage.setItem('username', username);
+        }
 
         return response.data;
     } catch (error) {
-        localStorage.removeItem('jwtToken');
+        if (browser) {
+            localStorage.removeItem('jwtToken');
+        }
         throw new Error(handleApiError(error));
     }
 }
@@ -98,7 +110,7 @@ export async function logoutUser() {
 }
 
 export function getUserId() {
-    return localStorage.getItem('userId');
+    return browser ? localStorage.getItem('userId') : null;
 }
 
 export function getUsername() {
@@ -108,7 +120,6 @@ export function getUsername() {
 export function isAuthenticated() {
     return !!getUserId();
 }
-// Fetch all projects for a specific user
 export async function getAllProjects(userId) {
     try {
         const response = await api.get(`/${userId}/dashboard`);
@@ -118,20 +129,58 @@ export async function getAllProjects(userId) {
     }
 }
 
-// Fetch a specific project by its ID
 export async function getProjectById(userId, projectId) {
     try {
-        const response = await api.get(`/${userId}/dashboard/${projectId}`);
+        const response = await api.get(`/${userId}/${projectId}`);
         return response.data;
     } catch (error) {
         throw new Error(handleApiError(error));
     }
 }
 
-// Create a new project
+export async function getProjectCustomFields(userId) {
+    try {
+        const response = await api.get(`/${userId}/dashboard/create-project`);
+        return response.data;
+
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
+function determineFieldType(value) {
+    if (value === null || value === undefined) return 'text';
+    if (typeof value === 'boolean') return 'checkbox';
+    if (typeof value === 'number') return Number.isInteger(value) ? 'number' : 'text';
+    if (typeof value === 'string') {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return 'date';
+        if (/^\d{4}-\d{2}-\d{2}T/.test(value)) return 'datetime-local';
+        return 'text';
+    }
+    return 'text';
+}
+
+function getPlaceholderForType(value, type) {
+    switch (type) {
+        case 'number':
+            return 'Enter a number...';
+        case 'date':
+            return 'YYYY-MM-DD';
+        case 'datetime-local':
+            return 'YYYY-MM-DDTHH:MM';
+        case 'checkbox':
+            return '';
+        case 'text':
+        default:
+            return typeof value === 'string' && value.length > 0
+                ? `e.g. "${value}"`
+                : 'Enter text...';
+    }
+}
+
 export async function createProject(userId, project) {
     try {
-        const response = await api.post(`/${userId}/dashboard/createProject`, project);
+        const response = await api.post(`/${userId}/create-project`, project);
         return response.data;
     } catch (error) {
         throw new Error(handleApiError(error));
@@ -139,30 +188,27 @@ export async function createProject(userId, project) {
 }
 
 
-// Edit an existing project
 export async function updateProject(userId, projectId, updatedProject) {
     try {
-        const response = await api.put(`/${userId}/dashboard/editProject/${projectId}`, updatedProject);
+        const response = await api.put(`/${userId}/edit-project/${projectId}`, updatedProject);
         return response.data;
     } catch (error) {
         throw new Error(handleApiError(error));
     }
 }
 
-// Delete a project
 export async function deleteProject(userId, projectId) {
     try {
-        const response = await api.delete(`/${userId}/dashboard/deleteProject/${projectId}`);
+        const response = await api.delete(`/${userId}/delete-project/${projectId}`);
         return response.data;
     } catch (error) {
         throw new Error(handleApiError(error));
     }
 }
 
-// Fetch all tasks in a project
 export async function getTasksForProject(userId, projectId) {
     try {
-        const response = await api.get(`/${userId}/dashboard/${projectId}`);
+        const response = await api.get(`/${userId}/${projectId}`);
         return response.data.tasks || [];
     } catch (error) {
         console.error("Logout error:", error);
@@ -170,30 +216,27 @@ export async function getTasksForProject(userId, projectId) {
     }
 }
 
-// Create a new task in a project
 export async function createTask(userId, projectId, task) {
     try {
-        const response = await api.post(`/${userId}/dashboard/${projectId}/task`, task);
+        const response = await api.post(`/${userId}/${projectId}/task`, task);
         return response.data;
     } catch (error) {
         throw new Error(handleApiError(error));
     }
 }
 
-// Edit an existing task
 export async function updateTask(userId, projectId, taskId, updatedTask) {
     try {
-        const response = await api.put(`/${userId}/dashboard/${projectId}/${taskId}/edit`, updatedTask);
+        const response = await api.put(`/${userId}/${projectId}/${taskId}/edit`, updatedTask);
         return response.data;
     } catch (error) {
         throw new Error(handleApiError(error));
     }
 }
 
-// Delete a task
 export async function deleteTask(userId, projectId, taskId) {
     try {
-        const response = await api.delete(`/${userId}/dashboard/${projectId}/${taskId}/delete`);
+        const response = await api.delete(`/${userId}/${projectId}/${taskId}/delete`);
         return response.data;
     } catch (error) {
         throw new Error(handleApiError(error));

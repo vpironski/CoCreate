@@ -13,6 +13,8 @@ import org.cocreate.CoCreate.utility.mapper.ProjectTaskMapper;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +48,36 @@ public class ProjectService {
 
     public Project getProjectForEdit(String userId, String projectId) {
         return getProjectByIdAndUserId(userId, projectId);
+    }
+
+    public Map<String, Object> getProjectCustomFields(String userId){
+        Map <String, String> fieldSettings = userService.getUserById(userId).getFieldSettings();
+        Map<String, Object> customFields = new HashMap<>();
+
+        if (fieldSettings != null && !fieldSettings.isEmpty()) {
+
+            fieldSettings.forEach((fieldName, dataType) -> {
+                Object defaultValue = getDefaultValueForDataType(dataType);
+                customFields.put(fieldName, defaultValue);
+            });
+
+        }
+
+        return customFields;
+    }
+
+    private Object getDefaultValueForDataType(String dataType) {
+        if (dataType == null) return null;
+
+        return switch (dataType.toLowerCase()) {
+            case "string" -> "";
+            case "integer" -> 0;
+            case "double" -> 0.0;
+            case "boolean" -> false;
+            case "date" -> LocalDate.now().toString();
+            case "datetime" -> Instant.now().toString();
+            default -> null;
+        };
     }
 
     public boolean createProject(String userId, ProjectDTO projectDTO) {

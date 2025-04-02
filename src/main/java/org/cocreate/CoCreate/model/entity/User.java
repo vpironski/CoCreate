@@ -45,5 +45,5 @@ public class User {
     private LocalDateTime updatedAt;
 
     @Field("field_settings")
-    private Map<String, Object> fieldSettings = Map.of();
+    private Map<String, String> fieldSettings = Map.of();
 }

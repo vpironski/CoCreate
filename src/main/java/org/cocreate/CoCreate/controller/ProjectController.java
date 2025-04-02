@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/{userId}/dashboard")
@@ -35,8 +36,9 @@ public class ProjectController {
     }
 
     @GetMapping("/create-project")
-    public ResponseEntity<ProjectDTO> getEmptyProjectTemplate() {
-        return ResponseEntity.ok(new ProjectDTO());
+    public ResponseEntity<Map<String, Object>> getProjectCustomFields(@PathVariable String userId) {
+        Map<String, Object> customFields = projectService.getProjectCustomFields(userId);
+        return ResponseEntity.ok(customFields);
     }
 
     @PostMapping("/create-project")

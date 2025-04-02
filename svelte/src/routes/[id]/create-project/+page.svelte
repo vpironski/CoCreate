@@ -1,36 +1,67 @@
 <script>
-    import {onMount} from 'svelte';
-    import {goto} from '$app/navigation';
-    import {getUserId, getAllProjects} from '$lib/api';
+    import { goto } from '$app/navigation';
+    import { getUserId, getAllProjects, getProjectCustomFields } from '$lib/api.js';
 
     let project = {
         name: '',
         description: '',
         startDate: '',
         endDate: '',
-        settings: {},
-        budget: 0.0,
         parentProjectId: '',
         customFields: {},
         priority: 'MEDIUM'
     };
 
-    let projects = [];
+    let projects = []; // For parent project selection
     let error = '';
-    let userId = '';
+    let userId = getUserId();
     let isLoading = true;
+    let customFieldDefinitions = [];
 
-    onMount(async () => {
-        userId = getUserId();
+    async function loadInitialData() {
+        isLoading = true;
+        error = '';
         try {
-            const response = await getAllProjects(userId);
-            projects = response.data || [];
+            // Load projects for parent selection
+            projects = await getAllProjects(userId);
+
+            // Load custom fields - now using correct endpoint
+            const customFieldsResponse = await getProjectCustomFields(userId);
+
+            // Transform the response if needed (based on your Postman screenshot)
+            customFieldDefinitions = Object.entries(customFieldsResponse).map(([name, value]) => ({
+                name,
+                type: determineFieldType(value) // You'll need this helper function
+            }));
+
+            // Initialize custom fields
+            project.customFields = customFieldDefinitions.reduce((acc, field) => {
+                acc[field.name] = field.type === 'checkbox' ? false :
+                    field.type === 'number' ? 0 : '';
+                return acc;
+            }, {});
+
         } catch (err) {
-            error = 'Failed to load projects';
+            console.error("Initialization failed:", err);
+            error = "Failed to load project settings. Please try again.";
+            if (err.response?.data?.message) {
+                error = err.response.data.message;
+            }
         } finally {
             isLoading = false;
         }
-    });
+    }
+
+    // Add this helper function to your script
+    function determineFieldType(value) {
+        if (typeof value === 'boolean') return 'checkbox';
+        if (typeof value === 'number') return 'number';
+        if (!isNaN(Date.parse(value))) return 'date';
+        return 'text';
+    }
+
+    // Load data when component mounts
+    loadInitialData();
 
     function formatDate(dateStr) {
         if (!dateStr) return '';
@@ -40,38 +71,38 @@
     }
 
     async function handleSubmit() {
+        error = '';
         try {
             const formattedProject = {
                 ...project,
                 startDate: formatDate(project.startDate),
                 endDate: formatDate(project.endDate),
-                settings: {
-                    ...project.settings,
-                    priority: project.priority
-                },
-                budget: Number(project.budget),
-                parentProjectId: project.parentProjectId || "",
-                customFields: project.customFields || {}
+                parentProjectId: project.parentProjectId || null,
+                customFields: project.customFields
             };
 
-            const response = await fetch(`localhost:8080/api/${userId}/dashboard/create-project`, {
+            const response = await fetch(`http://localhost:8080/api/${userId}/dashboard/create-project`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
                 },
                 body: JSON.stringify(formattedProject)
             });
 
             if (!response.ok) {
-                throw new Error('Failed to create project');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to create project');
             }
 
             await goto(`/${userId}/dashboard`);
         } catch (err) {
-            error = err.message;
+            console.error("Project creation failed:", err);
+            error = err.message || 'Project creation failed';
         }
     }
 </script>
+
 
 <div class="min-h-screen flex items-start justify-center pt-16 md:pt-24 px-4 md:px-8">
     <div class="w-full max-w-3xl bg-white rounded-3xl shadow-xl p-6 md:p-10 dark:bg-gray-800 transition-all duration-300 mt-8 md:mt-16">
@@ -125,31 +156,49 @@
                 </div>
                 <div class="w-full md:w-1/2 px-3">
                     <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="end-date">
-                        End Date*
+                        End Date
                     </label>
                     <input
                             id="end-date"
                             type="date"
                             bind:value={project.endDate}
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded-lg py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-teal-500 dark:bg-gray-700 dark:text-white"
-                            required
                     />
                 </div>
             </div>
 
-            <!-- Budget -->
+            <!-- Custom Fields -->
             <div>
-                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="budget">
-                    Budget ($)
+                <label for="custom_fields" class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+                    Custom Fields
                 </label>
-                <input
-                        id="budget"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        bind:value={project.budget}
-                        class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded-lg py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-teal-500 dark:bg-gray-700 dark:text-white"
-                />
+                <div id="custom_fields" class="space-y-4">
+                    {#if customFieldDefinitions.length > 0}
+                        {#each customFieldDefinitions as field, index}
+                            <div>
+                                <label class="block text-gray-700 text-sm mb-1">
+                                    {field.name}
+                                </label>
+                                {#if field.type === 'checkbox'}
+                                    <input
+                                            data-field={`custom-field-${index}`}
+                                            type="checkbox"
+                                            bind:checked={project.customFields[field.name]}
+                                            class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                                    />
+                                {:else}
+                                    <input
+                                            data-field={`custom-field-${index}`}
+                                            type={field.type}
+                                            bind:value={project.customFields[field.name]}
+                                            placeholder={field.placeholder}
+                                            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded-lg py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-teal-500 dark:bg-gray-700 dark:text-white"
+                                    />
+                                {/if}
+                            </div>
+                        {/each}
+                    {/if}
+                </div>
             </div>
 
             <!-- Priority -->
@@ -158,9 +207,10 @@
                     Priority
                 </label>
                 <div class="flex space-x-4">
-                    {#each ['LOW', 'MEDIUM', 'HIGH'] as priority}
-                        <label class="inline-flex items-center">
+                    {#each ['LOW', 'MEDIUM', 'HIGH', 'URGENT'] as priority}
+                        <label for="priority" class="inline-flex items-center">
                             <input
+                                    id="priority"
                                     type="radio"
                                     bind:group={project.priority}
                                     value={priority}
@@ -193,37 +243,6 @@
                         {/each}
                     </select>
                 {/if}
-            </div>
-
-            <!-- Custom Fields -->
-            <div>
-                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
-                    Custom Fields
-                </label>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-gray-700 text-sm mb-1" for="client-name">
-                            Client Name
-                        </label>
-                        <input
-                                id="client-name"
-                                type="text"
-                                bind:value={project.customFields.clientName}
-                                class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded-lg py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-teal-500 dark:bg-gray-700 dark:text-white"
-                        />
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm mb-1" for="website-type">
-                            Website Type
-                        </label>
-                        <input
-                                id="website-type"
-                                type="text"
-                                bind:value={project.customFields.websiteType}
-                                class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded-lg py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-teal-500 dark:bg-gray-700 dark:text-white"
-                        />
-                    </div>
-                </div>
             </div>
 
             <!-- Submit Button -->
