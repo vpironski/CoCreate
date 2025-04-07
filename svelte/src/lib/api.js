@@ -131,7 +131,7 @@ export async function getAllProjects(userId) {
 
 export async function getProjectById(userId, projectId) {
     try {
-        const response = await api.get(`/${userId}/${projectId}`);
+        const response = await api.get(`/${userId}/dashboard/${projectId}`);
         return response.data;
     } catch (error) {
         throw new Error(handleApiError(error));
@@ -148,35 +148,6 @@ export async function getProjectCustomFields(userId) {
     }
 }
 
-function determineFieldType(value) {
-    if (value === null || value === undefined) return 'text';
-    if (typeof value === 'boolean') return 'checkbox';
-    if (typeof value === 'number') return Number.isInteger(value) ? 'number' : 'text';
-    if (typeof value === 'string') {
-        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return 'date';
-        if (/^\d{4}-\d{2}-\d{2}T/.test(value)) return 'datetime-local';
-        return 'text';
-    }
-    return 'text';
-}
-
-function getPlaceholderForType(value, type) {
-    switch (type) {
-        case 'number':
-            return 'Enter a number...';
-        case 'date':
-            return 'YYYY-MM-DD';
-        case 'datetime-local':
-            return 'YYYY-MM-DDTHH:MM';
-        case 'checkbox':
-            return '';
-        case 'text':
-        default:
-            return typeof value === 'string' && value.length > 0
-                ? `e.g. "${value}"`
-                : 'Enter text...';
-    }
-}
 
 export async function createProject(userId, project) {
     try {
@@ -199,7 +170,7 @@ export async function updateProject(userId, projectId, updatedProject) {
 
 export async function deleteProject(userId, projectId) {
     try {
-        const response = await api.delete(`/${userId}/delete-project/${projectId}`);
+        const response = await api.delete(`/${userId}/dashboard/delete-project/${projectId}`);
         return response.data;
     } catch (error) {
         throw new Error(handleApiError(error));
