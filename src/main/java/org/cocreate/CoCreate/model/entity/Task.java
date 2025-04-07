@@ -17,7 +17,7 @@ public class Task {
 
     private String description;
 
-    private List<User> assignedUsers;
+    private List<String> assignedUsers;
 
     private LocalDateTime startDate;
 

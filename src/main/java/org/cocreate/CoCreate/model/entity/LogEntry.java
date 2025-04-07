@@ -7,7 +7,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -22,5 +21,5 @@ public class LogEntry {
     private String entityId;  // Project or Task ID
     private String entityType; // Project, Task
     private LocalDateTime timestamp;
-    private Map<String, Object> details;
+    private Object details;
 }

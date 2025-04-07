@@ -8,7 +8,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -18,9 +17,8 @@ import java.util.Map;
 public class AuditLog {
     @Id
     private String id;
-    private String entityType; // "Task", "Project"
     private String entityId;
     private String userId;
     private LocalDateTime deletedAt;
-    private Map<String, Object> originalData; // Stores the full deleted object
+    private Object originalData; // Stores the full deleted object
 }

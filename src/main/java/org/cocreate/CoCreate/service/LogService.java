@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -19,17 +18,17 @@ public class LogService {
         this.logRepository = logRepository;
     }
 
-    public void logInfo(String message, String userId, String entityId, String entityType, Map<String, Object> details) {
+    public void logInfo(String message, String userId, String entityId, String entityType, Object details) {
         saveLog("INFO", message, userId, entityId, entityType, details);
         logger.info(message);
     }
 
-    public void logError(String message, String userId, String entityId, String entityType, Map<String, Object> details, Exception e) {
+    public void logError(String message, String userId, String entityId, String entityType, Object details, Exception e) {
         saveLog("ERROR", message, userId, entityId, entityType, details);
         logger.error(message, e);
     }
 
-    private void saveLog(String level, String message, String userId, String entityId, String entityType, Map<String, Object> details) {
+    private void saveLog(String level, String message, String userId, String entityId, String entityType, Object details) {
         LogEntry log = new LogEntry(UUID.randomUUID().toString(), level, message, userId, entityId, entityType, LocalDateTime.now(), details);
         logRepository.save(log);
     }

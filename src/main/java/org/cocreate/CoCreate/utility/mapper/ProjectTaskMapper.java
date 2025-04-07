@@ -4,7 +4,6 @@ import org.cocreate.CoCreate.model.dto.ProjectDTO;
 import org.cocreate.CoCreate.model.dto.TaskDTO;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
-import org.cocreate.CoCreate.model.entity.User;
 import org.cocreate.CoCreate.model.enums.Priority;
 import org.cocreate.CoCreate.model.enums.ProjectStatus;
 import org.cocreate.CoCreate.model.enums.TaskStatus;
@@ -36,7 +35,6 @@ public class ProjectTaskMapper {
         project.setStatus(ProjectStatus.DRAFT); // Set status to DRAFT
         project.setTags(List.of()); // Set empty list for tags if none are provided
         project.setTeamMembers(List.of()); // Set empty list for team members
-        project.setTasks(List.of()); // Set empty list for tasks
 
         return project;
     }
@@ -50,9 +48,6 @@ public class ProjectTaskMapper {
         }
         if (source.getStatus() != null) {
             target.setStatus(source.getStatus());
-        }
-        if (source.getTasks() != null && !source.getTasks().isEmpty()) {
-            target.setTasks(source.getTasks());
         }
         if (source.getStartDate() != null) {
             target.setStartDate(source.getStartDate());
@@ -86,7 +81,7 @@ public class ProjectTaskMapper {
         }
     }
 
-    public static Task mapToTask(TaskDTO taskDTO, List<User> assignedUsers) {
+    public static Task mapToTask(TaskDTO taskDTO) {
         Task task = new Task();
 
         task.setId(UUID.randomUUID().toString());
@@ -95,7 +90,7 @@ public class ProjectTaskMapper {
         task.setStartDate(taskDTO.getStartDate());
         task.setEndDate(taskDTO.getEndDate());
         task.setDependencies(taskDTO.getDependencies());
-        task.setAssignedUsers(assignedUsers);
+        task.setAssignedUsers(taskDTO.getUserIds());
 
         task.setStatus(TaskStatus.IN_PROGRESS);
         task.setPriority(Priority.MEDIUM);

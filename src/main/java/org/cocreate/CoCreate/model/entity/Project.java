@@ -29,9 +29,6 @@ public class Project {
     private String description = "";
     private ProjectStatus status = ProjectStatus.DRAFT;
 
-    @Field("tasks")
-    private List<Task> tasks = List.of();
-
     @Field("start_date")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate startDate = LocalDate.now();
@@ -62,7 +59,7 @@ public class Project {
     private String parentProjectId = "";
 
     @Field("workflow")
-    private Map<String,List<String>> workflow = new HashMap<>();
+    private Workflow workflow = new Workflow();
 
     @Field("custom_fields")
     private CustomFields customFields = new CustomFields();

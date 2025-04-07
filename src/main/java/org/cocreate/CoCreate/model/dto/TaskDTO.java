@@ -15,6 +15,8 @@ public class TaskDTO {
 
     private String description = "";
 
+    private String card = "";
+
     private List<String> userIds = new ArrayList<>();
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")

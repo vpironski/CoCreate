@@ -18,8 +18,6 @@ import org.springframework.stereotype.Service;
 import java.lang.reflect.Field;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,26 +70,14 @@ public class ProjectService {
     }
 
     public boolean createProject(String userId, ProjectDTO projectDTO) {
-        try {
-            Project project = ProjectTaskMapper.mapToProject(projectDTO, userId);
+        Project project = ProjectTaskMapper.mapToProject(projectDTO, userId);
 
-            Map<String, List<String>> defaultWorkflow = new HashMap<>();
-            defaultWorkflow.put("To Do", new ArrayList<>());
-            defaultWorkflow.put("In Progress", new ArrayList<>());
-            defaultWorkflow.put("Done", new ArrayList<>());
-            project.setWorkflow(defaultWorkflow);
+        projectRepository.save(project);
 
-            projectRepository.save(project);
+        logService.logInfo("Project created successfully", userId, project.getId(), "Project",
+                Map.of("name", project.getName(), "description", project.getDescription()));
 
-            logService.logInfo("Project created successfully", userId, project.getId(), "Project",
-                    Map.of("name", project.getName(), "description", project.getDescription()));
-
-            return true;
-        } catch (Exception e) {
-            logService.logError("Error creating project", userId, null, "Project",
-                    Map.of("error", e.getMessage()), e);
-            throw e;
-        }
+        return true;
     }
 
     public boolean updateProject(String userId, String projectId, Project updatedProject) {
@@ -112,45 +98,21 @@ public class ProjectService {
         }
     }
 
-    public boolean deleteProject(String userId, String projectId) throws IllegalAccessException {
+    public boolean deleteProject(String userId, String projectId){
         Project existingProject = getProjectByIdAndUserId(userId, projectId);
 
-        try {
-            AuditLog auditLog = new AuditLog();
-            auditLog.setEntityType("Project");
-            auditLog.setEntityId(existingProject.getId());
-            auditLog.setUserId(userId);
-            auditLog.setDeletedAt(LocalDateTime.now());
+        AuditLog auditLog = new AuditLog();
+        auditLog.setEntityId(existingProject.getId());
+        auditLog.setUserId(userId);
+        auditLog.setDeletedAt(LocalDateTime.now());
+        auditLog.setOriginalData(existingProject);
+        auditLogRepository.save(auditLog);
 
-            Map<String, Object> originalData = new HashMap<>();
-            for (Field field : Project.class.getDeclaredFields()) {
-                field.setAccessible(true);
-                Object value = field.get(existingProject);
+        projectRepository.delete(existingProject);
+        logService.logInfo("Project deleted", userId, projectId, "Project", existingProject);
 
-                if (value instanceof Enum<?>) {
-                    value = ((Enum<?>) value).name();
-                } else if (value instanceof LocalDateTime) {
-                    value = value.toString();
-                } else if (value instanceof List<?>) {
-                    value = ((List<?>) value).stream()
-                            .map(item -> extractId(item))
-                            .toList();
-                }
+        return true;
 
-                originalData.put(field.getName(), value);
-            }
-
-            auditLog.setOriginalData(originalData);
-            auditLogRepository.save(auditLog);
-
-            projectRepository.delete(existingProject);
-            logService.logInfo("Project deleted", userId, projectId, "Project", originalData);
-
-            return true;
-        } catch (Exception e) {
-            logService.logError("Error deleting project", userId, projectId, "Project", Map.of("error", e.getMessage()), e);
-            throw e;
-        }
     }
     private String extractId(Object obj) {
         try {
@@ -163,35 +125,25 @@ public class ProjectService {
     }
 
     public Task getTaskForEdit(String userId, String projectId, String taskId) {
-        Project project = getProjectByIdAndUserId(userId, projectId);
-        return project.getTasks().stream()
-                .filter(task -> task.getId().equals(taskId))
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("Task not found in project: " + project.getName() + " !"));
+        return getProjectByIdAndUserId(userId, projectId)
+                .getWorkflow()
+                .getTaskById(taskId);
     }
 
     public boolean createTask(String userId, String projectId, TaskDTO taskDTO) {
         Project project = getProjectByIdAndUserId(userId, projectId);
 
-        List<User> assignedUsers = taskDTO.getUserIds().stream()
-                .map(userService::getUserById)
-                .toList();
+        Task task = ProjectTaskMapper.mapToTask(taskDTO);
 
-        Task task = ProjectTaskMapper.mapToTask(taskDTO, assignedUsers);
-
-        project.getTasks().add(task);
+        project.getWorkflow().addTaskToCard(taskDTO.getCard(), task);
         projectRepository.save(project);
         return true;
     }
 
     public boolean updateTask(String userId, String projectId, String taskId, Task updatedTask) {
         Project project = getProjectByIdAndUserId(userId, projectId);
-        List<Task> tasks = project.getTasks();
 
-        Task existingTask = tasks.stream()
-                .filter(task -> task.getId().equals(taskId))
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("Task not found in project: " + project.getName() + " !"));
+        Task existingTask = project.getWorkflow().getTaskById(taskId);
 
         ProjectTaskMapper.mapToTask(updatedTask, existingTask);
         projectRepository.save(project);
@@ -200,13 +152,7 @@ public class ProjectService {
 
     public boolean deleteTask(String userId, String projectId, String taskId) {
         Project project = getProjectByIdAndUserId(userId, projectId);
-        List<Task> tasks = project.getTasks();
-
-        boolean removed = tasks.removeIf(task -> task.getId().equals(taskId));
-
-        if (!removed) {
-            throw new EntityNotFoundException("Task not found in project: " + project.getName() + " !");
-        }
+        project.getWorkflow().removeTaskById(taskId);
 
         projectRepository.save(project);
         return true;
