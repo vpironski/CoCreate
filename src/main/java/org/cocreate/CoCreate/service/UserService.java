@@ -3,7 +3,7 @@ package org.cocreate.CoCreate.service;
 import org.cocreate.CoCreate.exception.UserException;
 import org.cocreate.CoCreate.model.record.UserRegisterDTO;
 import org.cocreate.CoCreate.model.entity.User;
-import org.cocreate.CoCreate.model.enums.UserRoleEnum;
+import org.cocreate.CoCreate.model.enums.UserRole;
 import org.cocreate.CoCreate.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,7 +50,7 @@ public class UserService {
         user.setEmail(userDto.email());
         user.setUsername(userDto.username());
         user.setPassword(passwordEncoder.encode(userDto.password()));
-        user.setRoles(List.of(UserRoleEnum.USER));
+        user.setRoles(List.of(UserRole.USER));
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
 

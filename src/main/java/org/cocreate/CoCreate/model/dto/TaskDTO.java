@@ -3,8 +3,6 @@ package org.cocreate.CoCreate.model.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
-import org.cocreate.CoCreate.model.enums.Priority;
-import org.cocreate.CoCreate.model.enums.TaskStatus;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

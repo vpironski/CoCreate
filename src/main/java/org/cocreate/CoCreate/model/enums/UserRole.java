@@ -1,6 +1,6 @@
 package org.cocreate.CoCreate.model.enums;
 
-public enum UserRoleEnum {
+public enum UserRole {
     USER,
     ADMIN
 }

@@ -1,5 +1,6 @@
 package org.cocreate.CoCreate.utility.config;
 
+import org.cocreate.CoCreate.model.enums.UserRole;
 import org.cocreate.CoCreate.utility.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +36,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/admin/*").hasRole(UserRole.ADMIN.toString())
                         .requestMatchers("/api/user/register", "/api/user/login").permitAll()
                         .anyRequest().authenticated()
                 )

@@ -4,10 +4,7 @@ import org.cocreate.CoCreate.exception.BadRequestException;
 import org.cocreate.CoCreate.model.record.ResponseMessage;
 import org.cocreate.CoCreate.service.AdminService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/admin/")
@@ -17,6 +14,11 @@ public class AdminController {
 
     public AdminController(AdminService adminService) {
         this.adminService = adminService;
+    }
+
+    @GetMapping("/")
+    public String testReturn(){
+        return "Test";
     }
 
     @PostMapping("{userId}/restore-project/{projectId}")

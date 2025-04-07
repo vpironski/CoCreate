@@ -2,7 +2,7 @@ package org.cocreate.CoCreate.model.entity;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.cocreate.CoCreate.model.enums.UserRoleEnum;
+import org.cocreate.CoCreate.model.enums.UserRole;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -33,7 +33,7 @@ public class User {
     private List<String> companyRole;
 
     @Field("roles")
-    private List<UserRoleEnum> roles;
+    private List<UserRole> roles;
 
     @Field("personal_projects")
     private List<String> personalProjects;
