@@ -1,5 +1,6 @@
 package org.cocreate.CoCreate.service;
 
+import org.cocreate.CoCreate.exception.BadRequestException;
 import org.cocreate.CoCreate.exception.EntityNotFoundException;
 import org.cocreate.CoCreate.model.dto.ProjectDTO;
 import org.cocreate.CoCreate.model.dto.TaskDTO;
@@ -58,29 +59,17 @@ public class ProjectService {
 
         if (fieldSettings != null && !fieldSettings.isEmpty()) {
             fieldSettings.forEach((fieldName, dataType) -> {
+                dataType = dataType.toLowerCase();
                 customFields.add(
                         switch (dataType){
                             case "string" -> new StringCustomField(fieldName, "");
+                            default -> throw new BadRequestException("Unsupported type");
                         });
             });
         }
 
         return customFields;
     }
-
-//    private Object getDefaultValueForDataType(String dataType) {
-//        if (dataType == null) return null;
-//
-//        return switch (dataType.toLowerCase()) {
-//            case "string" -> "";
-//            case "integer" -> 0;
-//            case "double" -> 0.0;
-//            case "boolean" -> false;
-//            case "date" -> LocalDate.now().toString();
-//            case "datetime" -> Instant.now().toString();
-//            default -> null;
-//        };
-//    }
 
     public boolean createProject(String userId, ProjectDTO projectDTO) {
         try {
