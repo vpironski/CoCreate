@@ -9,14 +9,15 @@ import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
 import org.cocreate.CoCreate.model.entity.User;
 import org.cocreate.CoCreate.model.entity.custom.fields.CustomFields;
-import org.cocreate.CoCreate.model.entity.custom.fields.StringCustomField;
+import org.cocreate.CoCreate.model.entity.custom.fields.impl.*;
 import org.cocreate.CoCreate.repository.AuditRepository;
 import org.cocreate.CoCreate.repository.ProjectRepository;
-import org.cocreate.CoCreate.utility.mapper.ProjectTaskMapper;
+import org.cocreate.CoCreate.config.mapper.ProjectTaskMapper;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +62,12 @@ public class ProjectService {
                 customFields.add(
                         switch (dataType){
                             case "string" -> new StringCustomField(fieldName, "");
-                            default -> throw new BadRequestException("Unsupported type");
+                            case "integer" -> new IntegerCustomField(fieldName, 0);
+                            case "double" -> new DoubleCustomField(fieldName, 0.0);
+                            case "boolean" -> new BooleanCustomField(fieldName, false);
+                            case "localdate" -> new LocalDateCustomField(fieldName, LocalDate.now());
+                            case "localdatetime" -> new LocalDateTimeCustomField(fieldName, LocalDateTime.now());
+                            default -> throw new BadRequestException("Unsupported type: " + dataType);
                         });
             });
         }
