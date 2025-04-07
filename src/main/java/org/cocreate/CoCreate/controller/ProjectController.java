@@ -3,6 +3,7 @@ package org.cocreate.CoCreate.controller;
 import org.cocreate.CoCreate.exception.BadRequestException;
 import org.cocreate.CoCreate.model.dto.ProjectDTO;
 import org.cocreate.CoCreate.model.dto.TaskDTO;
+import org.cocreate.CoCreate.model.entity.custom.fields.CustomFields;
 import org.cocreate.CoCreate.model.record.ResponseMessage;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
@@ -36,8 +37,8 @@ public class ProjectController {
     }
 
     @GetMapping("/create-project")
-    public ResponseEntity<Map<String, Object>> getProjectCustomFields(@PathVariable String userId) {
-        Map<String, Object> customFields = projectService.getProjectCustomFields(userId);
+    public ResponseEntity<CustomFields> getProjectCustomFields(@PathVariable String userId) {
+        CustomFields customFields = projectService.getProjectCustomFields(userId);
         return ResponseEntity.ok(customFields);
     }
 

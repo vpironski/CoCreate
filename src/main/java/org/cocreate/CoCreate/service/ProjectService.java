@@ -7,15 +7,17 @@ import org.cocreate.CoCreate.model.entity.AuditLog;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
 import org.cocreate.CoCreate.model.entity.User;
+import org.cocreate.CoCreate.model.entity.custom.fields.CustomFields;
+import org.cocreate.CoCreate.model.entity.custom.fields.StringCustomField;
 import org.cocreate.CoCreate.repository.AuditRepository;
 import org.cocreate.CoCreate.repository.ProjectRepository;
 import org.cocreate.CoCreate.utility.mapper.ProjectTaskMapper;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
-import java.time.Instant;
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,39 +52,46 @@ public class ProjectService {
         return getProjectByIdAndUserId(userId, projectId);
     }
 
-    public Map<String, Object> getProjectCustomFields(String userId){
-        Map <String, String> fieldSettings = userService.getUserById(userId).getFieldSettings();
-        Map<String, Object> customFields = new HashMap<>();
+    public CustomFields getProjectCustomFields(String userId){
+        Map<String, String> fieldSettings = userService.getUserById(userId).getFieldSettings();
+        CustomFields customFields = new CustomFields();
 
         if (fieldSettings != null && !fieldSettings.isEmpty()) {
-
             fieldSettings.forEach((fieldName, dataType) -> {
-                Object defaultValue = getDefaultValueForDataType(dataType);
-                customFields.put(fieldName, defaultValue);
+                customFields.add(
+                        switch (dataType){
+                            case "string" -> new StringCustomField(fieldName, "");
+                        });
             });
-
         }
 
         return customFields;
     }
 
-    private Object getDefaultValueForDataType(String dataType) {
-        if (dataType == null) return null;
-
-        return switch (dataType.toLowerCase()) {
-            case "string" -> "";
-            case "integer" -> 0;
-            case "double" -> 0.0;
-            case "boolean" -> false;
-            case "date" -> LocalDate.now().toString();
-            case "datetime" -> Instant.now().toString();
-            default -> null;
-        };
-    }
+//    private Object getDefaultValueForDataType(String dataType) {
+//        if (dataType == null) return null;
+//
+//        return switch (dataType.toLowerCase()) {
+//            case "string" -> "";
+//            case "integer" -> 0;
+//            case "double" -> 0.0;
+//            case "boolean" -> false;
+//            case "date" -> LocalDate.now().toString();
+//            case "datetime" -> Instant.now().toString();
+//            default -> null;
+//        };
+//    }
 
     public boolean createProject(String userId, ProjectDTO projectDTO) {
         try {
             Project project = ProjectTaskMapper.mapToProject(projectDTO, userId);
+
+            Map<String, List<String>> defaultWorkflow = new HashMap<>();
+            defaultWorkflow.put("To Do", new ArrayList<>());
+            defaultWorkflow.put("In Progress", new ArrayList<>());
+            defaultWorkflow.put("Done", new ArrayList<>());
+            project.setWorkflow(defaultWorkflow);
+
             projectRepository.save(project);
 
             logService.logInfo("Project created successfully", userId, project.getId(), "Project",

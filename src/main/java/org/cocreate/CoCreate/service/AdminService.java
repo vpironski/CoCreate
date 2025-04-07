@@ -4,6 +4,7 @@ import org.cocreate.CoCreate.exception.EntityNotFoundException;
 import org.cocreate.CoCreate.model.entity.AuditLog;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
+import org.cocreate.CoCreate.model.entity.custom.fields.CustomFields;
 import org.cocreate.CoCreate.model.enums.Priority;
 import org.cocreate.CoCreate.model.enums.ProjectStatus;
 import org.cocreate.CoCreate.repository.AuditRepository;
@@ -46,13 +47,10 @@ public class AdminService {
         restoredProject.setEndDate(LocalDate.parse((String) originalData.get("endDate")));
         restoredProject.setOwnerId((String) originalData.get("ownerId"));
         restoredProject.setPriority(Priority.valueOf((String) originalData.get("priority")));
-        restoredProject.setProgress((Integer) originalData.get("progress"));
 
         restoredProject.setTags((List<String>) originalData.get("tags"));
         restoredProject.setParentProjectId((String) originalData.get("parentProjectId"));
-        restoredProject.setResources((Map<String, Object>) originalData.get("resources"));
-        restoredProject.setActivityLog((List<Map<String, Object>>) originalData.get("activityLog"));
-        restoredProject.setCustomFields((Map<String, Object>) originalData.get("customFields"));
+        restoredProject.setCustomFields((CustomFields) originalData.get("customFields"));
 
         // Restore team members
         List<String> teamMemberIds = (List<String>) originalData.get("teamMembers");

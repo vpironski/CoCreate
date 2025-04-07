@@ -35,10 +35,7 @@ public class ProjectTaskMapper {
         project.setCreatedAt(LocalDateTime.now());
         project.setUpdatedAt(LocalDateTime.now());
         project.setStatus(ProjectStatus.DRAFT); // Set status to DRAFT
-        project.setProgress(0); // Set default progress to 0
         project.setTags(List.of()); // Set empty list for tags if none are provided
-        project.setResources(Map.of()); // Set empty map for resources
-        project.setActivityLog(List.of()); // Set empty list for activity log
         project.setTeamMembers(List.of()); // Set empty list for team members
         project.setTasks(List.of()); // Set empty list for tasks
 
@@ -79,22 +76,13 @@ public class ProjectTaskMapper {
         if (source.getPriority() != null) {
             target.setPriority(source.getPriority());
         }
-        if (source.getProgress() != null && source.getProgress() != 0) {
-            target.setProgress(source.getProgress());
-        }
         if (source.getTags() != null && !source.getTags().isEmpty()) {
             target.setTags(source.getTags());
         }
         if (source.getParentProjectId() != null && !source.getParentProjectId().isEmpty()) {
             target.setParentProjectId(source.getParentProjectId());
         }
-        if (source.getResources() != null && !source.getResources().isEmpty()) {
-            target.setResources(source.getResources());
-        }
-        if (source.getActivityLog() != null && !source.getActivityLog().isEmpty()) {
-            target.setActivityLog(source.getActivityLog());
-        }
-        if (source.getCustomFields() != null && !source.getCustomFields().isEmpty()) {
+        if (source.getCustomFields() != null) {
             target.setCustomFields(source.getCustomFields());
         }
     }

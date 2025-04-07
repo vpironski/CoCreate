@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.cocreate.CoCreate.model.entity.custom.fields.CustomFields;
 import org.cocreate.CoCreate.model.enums.Priority;
 
 import java.time.LocalDate;
@@ -29,7 +30,7 @@ public class ProjectDTO {
 
     private String parentProjectId = "";
 
-    private Map<String, Object> customFields = Map.of();
+    private CustomFields customFields = new CustomFields();
 
     private Priority priority = Priority.MEDIUM;
 }
