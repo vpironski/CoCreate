@@ -1,4 +1,4 @@
-package org.cocreate.CoCreate.utility.config;
+package org.cocreate.CoCreate.config.cors;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

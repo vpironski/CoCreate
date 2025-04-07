@@ -1,4 +1,4 @@
-package org.cocreate.CoCreate.utility;
+package org.cocreate.CoCreate.config.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

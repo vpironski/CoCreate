@@ -1,4 +1,4 @@
-package org.cocreate.CoCreate.controller;
+package org.cocreate.CoCreate.web;
 
 import org.cocreate.CoCreate.exception.BadRequestException;
 import org.cocreate.CoCreate.model.record.ResponseMessage;

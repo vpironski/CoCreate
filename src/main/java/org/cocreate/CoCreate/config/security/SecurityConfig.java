@@ -1,9 +1,9 @@
-package org.cocreate.CoCreate.utility.config;
+package org.cocreate.CoCreate.config.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.filter.CorsFilter;
 import org.cocreate.CoCreate.model.enums.UserRole;
-import org.cocreate.CoCreate.utility.JwtAuthenticationFilter;
+import org.cocreate.CoCreate.config.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

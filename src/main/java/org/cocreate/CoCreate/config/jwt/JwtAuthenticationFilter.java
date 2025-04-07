@@ -1,4 +1,4 @@
-package org.cocreate.CoCreate.utility;
+package org.cocreate.CoCreate.config.jwt;
 
 import org.cocreate.CoCreate.service.CustomUserDetailsService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

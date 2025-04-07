@@ -1,4 +1,4 @@
-package org.cocreate.CoCreate.controller;
+package org.cocreate.CoCreate.web;
 
 import org.cocreate.CoCreate.exception.BadRequestException;
 import org.cocreate.CoCreate.model.dto.ProjectDTO;
@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/{userId}/dashboard")
@@ -68,7 +67,7 @@ public class ProjectController {
 
     @DeleteMapping("/delete-project/{projectId}")
     public ResponseEntity<ResponseMessage> deleteProject(@PathVariable String userId,
-                                                         @PathVariable String projectId) throws IllegalAccessException {
+                                                         @PathVariable String projectId){
         if (!projectService.deleteProject(userId, projectId)) {
             throw new BadRequestException("Failed to delete project!");
         }

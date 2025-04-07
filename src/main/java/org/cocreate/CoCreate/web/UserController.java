@@ -1,4 +1,4 @@
-package org.cocreate.CoCreate.controller;
+package org.cocreate.CoCreate.web;
 
 import org.cocreate.CoCreate.exception.BadRequestException;
 import org.cocreate.CoCreate.model.record.AuthResponse;
@@ -7,7 +7,7 @@ import org.cocreate.CoCreate.model.record.UserRegisterDTO;
 import org.cocreate.CoCreate.model.entity.User;
 import org.cocreate.CoCreate.model.record.AuthRequest;
 import org.cocreate.CoCreate.service.CustomUserDetailsService;
-import org.cocreate.CoCreate.utility.JwtUtils;
+import org.cocreate.CoCreate.config.jwt.JwtUtils;
 import org.cocreate.CoCreate.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;

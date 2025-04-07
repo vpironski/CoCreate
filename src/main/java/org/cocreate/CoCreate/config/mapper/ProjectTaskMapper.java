@@ -1,4 +1,4 @@
-package org.cocreate.CoCreate.utility.mapper;
+package org.cocreate.CoCreate.config.mapper;
 
 import org.cocreate.CoCreate.model.dto.ProjectDTO;
 import org.cocreate.CoCreate.model.dto.TaskDTO;
