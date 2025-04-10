@@ -28,9 +28,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(SecurityException.class)
-    public ResponseEntity<ErrorResponse> handleBadRequestException(SecurityException ex){
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(new ErrorResponse("Forbidden!"));
+    public ResponseEntity<ErrorResponse> handleSecurityException(SecurityException ex){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

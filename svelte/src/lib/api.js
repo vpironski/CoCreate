@@ -118,8 +118,16 @@ export function getUsername() {
 }
 
 export function isAuthenticated() {
-    return !!getUserId();
+    const token = localStorage.getItem('jwtToken');
+    if (!token) return false;
+    try {
+        const decoded = jwtDecode(token);
+        return decoded.exp * 1000 > Date.now();
+    } catch (e) {
+        return false;
+    }
 }
+
 export async function getAllProjects(userId) {
     try {
         const response = await api.get(`/${userId}/dashboard`);
@@ -151,9 +159,12 @@ export async function getProjectCustomFields(userId) {
 
 export async function createProject(userId, project) {
     try {
-        const response = await api.post(`/${userId}/create-project`, project);
+        console.log("Making API call to create project:", `/${userId}/dashboard/create-project`);
+        const response = await api.post(`/${userId}/dashboard/create-project`, project);
+        console.log("Project creation successful:", response.data);
         return response.data;
     } catch (error) {
+        console.error("API error details:", error.response?.status, error.response?.data);
         throw new Error(handleApiError(error));
     }
 }

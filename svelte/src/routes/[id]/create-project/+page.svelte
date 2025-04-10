@@ -1,6 +1,7 @@
 <script>
     import { goto } from '$app/navigation';
-    import { getUserId, getAllProjects, getProjectCustomFields } from '$lib/api.js';
+    import {getUserId, getAllProjects, getProjectCustomFields, createProject, isAuthenticated} from '$lib/api.js';
+    import { onMount } from "svelte";
 
     let project = {
         name: '',
@@ -12,93 +13,146 @@
         priority: 'MEDIUM'
     };
 
-    let projects = []; // For parent project selection
+    let customFieldDefinitions = [];
+
+    let projects = [];
     let error = '';
     let userId = getUserId();
     let isLoading = true;
-    let customFieldDefinitions = [];
+
+    onMount(async () => {
+        await loadInitialData();
+        if (!project.startDate) {
+            project.startDate = new Date().toISOString().split('T')[0];
+        }
+        if (!project.endDate) {
+            let defaultEndDate = new Date();
+            defaultEndDate.setMonth(defaultEndDate.getMonth() + 1);
+            project.endDate = defaultEndDate.toISOString().split('T')[0];
+        }
+    });
 
     async function loadInitialData() {
         isLoading = true;
         error = '';
+        customFieldDefinitions = [];
+        let formCustomFieldsMap = {};
         try {
-            // Load projects for parent selection
             projects = await getAllProjects(userId);
-
-            // Load custom fields - now using correct endpoint
             const customFieldsResponse = await getProjectCustomFields(userId);
+            const fetchedFields = Array.isArray(customFieldsResponse?.customFields) ? customFieldsResponse.customFields : [];
 
-            // Transform the response if needed (based on your Postman screenshot)
-            customFieldDefinitions = Object.entries(customFieldsResponse).map(([name, value]) => ({
-                name,
-                type: determineFieldType(value) // You'll need this helper function
-            }));
+            fetchedFields.forEach(field => {
+                const fieldType = determineFieldType(field.value);
+                let initialValue = field.value;
 
-            // Initialize custom fields
-            project.customFields = customFieldDefinitions.reduce((acc, field) => {
-                acc[field.name] = field.type === 'checkbox' ? false :
-                    field.type === 'number' ? 0 : '';
-                return acc;
-            }, {});
+                if (fieldType === 'date' && initialValue && typeof initialValue === 'string') {
+                    initialValue = initialValue.split('T')[0];
+                } else if (fieldType === 'datetime-local' && initialValue && typeof initialValue === 'string') {
+                    initialValue = initialValue.substring(0, 16);
+                }
+
+                customFieldDefinitions.push({
+                    name: field.name,
+                    type: fieldType,
+                    originalValue: initialValue
+                });
+
+                formCustomFieldsMap[field.name] = initialValue;
+            });
+
+            project.customFields = formCustomFieldsMap;
+            project = project;
+            customFieldDefinitions = customFieldDefinitions;
 
         } catch (err) {
             console.error("Initialization failed:", err);
             error = "Failed to load project settings. Please try again.";
-            if (err.response?.data?.message) {
-                error = err.response.data.message;
-            }
+            if (err?.response?.data?.message) { error = err.response.data.message; } else if (err.message) { error = err.message; }
         } finally {
             isLoading = false;
         }
     }
 
-    // Add this helper function to your script
     function determineFieldType(value) {
         if (typeof value === 'boolean') return 'checkbox';
         if (typeof value === 'number') return 'number';
-        if (!isNaN(Date.parse(value))) return 'date';
+        if (typeof value === 'string') {
+            if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?/.test(value)) return 'datetime-local';
+            if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return 'date';
+        }
         return 'text';
     }
 
-    // Load data when component mounts
-    loadInitialData();
-
-    function formatDate(dateStr) {
-        if (!dateStr) return '';
-        const date = new Date(dateStr);
-        const pad = num => num.toString().padStart(2, '0');
-        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    function formatDateTime(value) {
+        if (typeof value === 'string' && value.includes('T')) {
+            return value.substring(0, 16).replace('T', ' ');
+        }
+        return value;
     }
 
     async function handleSubmit() {
         error = '';
+        isLoading = true;
         try {
-            const formattedProject = {
-                ...project,
-                startDate: formatDate(project.startDate),
-                endDate: formatDate(project.endDate),
-                parentProjectId: project.parentProjectId || null,
-                customFields: project.customFields
-            };
 
-            const response = await fetch(`http://localhost:8080/api/${userId}/dashboard/create-project`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
-                },
-                body: JSON.stringify(formattedProject)
-            });
+            const processedCustomFieldsArray = [];
+            for (const fieldDef of customFieldDefinitions) {
+                const name = fieldDef.name;
+                const type = fieldDef.type;
+                let currentValue = project.customFields[name];
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to create project');
+                // Process value based on type
+                if (type === 'number') {
+                    currentValue = (currentValue === '' || currentValue === null || isNaN(parseFloat(currentValue))) ? 0 : parseFloat(currentValue);
+                } else if (type === 'checkbox') {
+                    currentValue = Boolean(currentValue);
+                } else if (type === 'date') {
+                    currentValue = currentValue || null;
+                } else if (type === 'datetime-local') {
+                    currentValue = currentValue || null;
+                } else { // text
+                    currentValue = (currentValue === null || currentValue === undefined) ? "" : String(currentValue);
+                }
+
+                processedCustomFieldsArray.push({
+                    name: name,
+                    value: currentValue
+                });
             }
 
-            await goto(`/${userId}/dashboard`);
+            const formattedProject = {
+                name: project.name,
+                description: project.description,
+                startDate: project.startDate || null,
+                endDate: project.endDate || null,
+                parentProjectId: project.parentProjectId || null,
+                priority: project.priority,
+                customFields: {
+                    customFields: processedCustomFieldsArray
+                }
+            };
+
+            try {
+                await createProject(userId, formattedProject);
+                console.log("Project creation successful, navigating to dashboard");
+
+                await goto(`/${userId}/dashboard`);
+            } catch (apiError) {
+                console.error("API error caught:", apiError);
+                throw apiError;
+            }
+
         } catch (err) {
             console.error("Project creation failed:", err);
-            error = err.message || 'Project creation failed';
+            error = err.message || "An unexpected error occurred.";
+
+            if (!isAuthenticated()) {
+                console.error("Lost authentication during request");
+                error += " Session expired. Please log in again.";
+            }
+        } finally {
+            isLoading = false;
         }
     }
 </script>
@@ -172,13 +226,16 @@
                 <label for="custom_fields" class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
                     Custom Fields
                 </label>
-                <div id="custom_fields" class="space-y-4">
-                    {#if customFieldDefinitions.length > 0}
+                {#if customFieldDefinitions.length > 0}
+                    <div id="custom_fields" class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Custom Fields</h3>
+
                         {#each customFieldDefinitions as field, index}
                             <div>
                                 <label class="block text-gray-700 text-sm mb-1">
                                     {field.name}
                                 </label>
+
                                 {#if field.type === 'checkbox'}
                                     <input
                                             data-field={`custom-field-${index}`}
@@ -191,14 +248,15 @@
                                             data-field={`custom-field-${index}`}
                                             type={field.type}
                                             bind:value={project.customFields[field.name]}
-                                            placeholder={field.placeholder}
+                                            placeholder={formatDateTime(field.value)}
                                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded-lg py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-teal-500 dark:bg-gray-700 dark:text-white"
                                     />
                                 {/if}
                             </div>
                         {/each}
-                    {/if}
-                </div>
+                    </div>
+                {/if}
+
             </div>
 
             <!-- Priority -->

@@ -8,13 +8,12 @@
     let errorMessage = '';
     let columns = {};
 
+    let userId = page.params.id;
     let projectId = page.params.projectId;  // From the [projectId] part
 
     onMount(async () => {
         try {
-            project = await getProjectById(projectId);
-            console.log("Project data:", project);
-            mapWorkflowToColumns();
+            project = await getProjectById(userId, projectId);
         } catch (error) {
             errorMessage = 'Failed to load project data';
             console.error('Error:', error);
@@ -23,15 +22,6 @@
         }
     });
 
-    function mapWorkflowToColumns() {
-        columns = {};
-
-        for (const [columnName, taskIds] of Object.entries(project.workflow)) {
-            columns[columnName] = taskIds.map(taskId => {
-                return project.tasks.find(task => task.id === taskId);
-            });
-        }
-    }
 
     let draggedTask = null;
     let draggedColumnIndex = null;
