@@ -1,15 +1,17 @@
 package org.cocreate.CoCreate.model.entity;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 @Getter
+@Setter
 public class Workflow {
 
-    private final LinkedHashMap<String, List<Task>> cards = new LinkedHashMap<>();
+    private LinkedHashMap<String, List<Task>> cards = new LinkedHashMap<>();
 
     public Workflow() {
         cards.put("To Do", new ArrayList<>());
