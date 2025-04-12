@@ -4,6 +4,7 @@ import org.cocreate.CoCreate.exception.BadRequestException;
 import org.cocreate.CoCreate.model.dto.ProjectDTO;
 import org.cocreate.CoCreate.model.dto.TaskDTO;
 import org.cocreate.CoCreate.model.entity.custom.fields.CustomFields;
+import org.cocreate.CoCreate.model.record.CardDTO;
 import org.cocreate.CoCreate.model.record.ResponseMessage;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
@@ -33,6 +34,16 @@ public class ProjectController {
     @GetMapping("/{projectId}")
     public ResponseEntity<Project> viewProject(@PathVariable String userId, @PathVariable String projectId) {
         return ResponseEntity.ok(projectService.getProjectByIdAndUserId(userId, projectId));
+    }
+
+    @PostMapping("/{projectId}/add-card")
+    public ResponseEntity<ResponseMessage> addCard(@PathVariable String userId, @PathVariable String projectId, @RequestBody CardDTO cardDTO){
+        return ResponseEntity.ok(projectService.addCard(userId, projectId, cardDTO));
+    }
+
+    @DeleteMapping("/{projectId}/remove-card")
+    public ResponseEntity<ResponseMessage> removeCard(@PathVariable String userId, @PathVariable String projectId, @RequestBody CardDTO cardDTO){
+        return ResponseEntity.ok(projectService.removeCard(userId, projectId, cardDTO));
     }
 
     @GetMapping("/create-project")

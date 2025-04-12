@@ -4,12 +4,11 @@ import org.cocreate.CoCreate.exception.BadRequestException;
 import org.cocreate.CoCreate.exception.EntityNotFoundException;
 import org.cocreate.CoCreate.model.dto.ProjectDTO;
 import org.cocreate.CoCreate.model.dto.TaskDTO;
-import org.cocreate.CoCreate.model.entity.AuditLog;
-import org.cocreate.CoCreate.model.entity.Project;
-import org.cocreate.CoCreate.model.entity.Task;
-import org.cocreate.CoCreate.model.entity.User;
+import org.cocreate.CoCreate.model.entity.*;
 import org.cocreate.CoCreate.model.entity.custom.fields.CustomFields;
 import org.cocreate.CoCreate.model.entity.custom.fields.impl.*;
+import org.cocreate.CoCreate.model.record.CardDTO;
+import org.cocreate.CoCreate.model.record.ResponseMessage;
 import org.cocreate.CoCreate.repository.AuditRepository;
 import org.cocreate.CoCreate.repository.ProjectRepository;
 import org.cocreate.CoCreate.config.mapper.ProjectTaskMapper;
@@ -73,6 +72,36 @@ public class ProjectService {
         }
 
         return customFields;
+    }
+
+    public ResponseMessage addCard(String userId, String projectId, CardDTO cardDTO) {
+        if (userService.getUserById(userId) == null) {
+            throw new BadRequestException("User not found");
+        }
+
+        Project project = getProjectByIdAndUserId(userId, projectId);
+
+        project.getWorkflow().createCard(cardDTO.cardName());
+        projectRepository.save(project);
+        logService.logInfo("Project workflow updated successfully", userId, projectId, "Project",
+                Map.of("name", project.getName()));
+
+        return new ResponseMessage("Project workflow updated successfully");
+    }
+
+    public ResponseMessage removeCard(String userId, String projectId, CardDTO cardDTO) {
+        if (userService.getUserById(userId) == null) {
+            throw new BadRequestException("User not found");
+        }
+
+        Project project = getProjectByIdAndUserId(userId, projectId);
+
+        project.getWorkflow().removeCard(cardDTO.cardName());
+        projectRepository.save(project);
+        logService.logInfo("Project workflow updated successfully", userId, projectId, "Project",
+                Map.of("name", project.getName()));
+
+        return new ResponseMessage("Project workflow updated successfully");
     }
 
     public boolean createProject(String userId, ProjectDTO projectDTO) {
@@ -163,6 +192,8 @@ public class ProjectService {
         projectRepository.save(project);
         return true;
     }
+
+
 }
 
 

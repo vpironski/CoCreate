@@ -1,6 +1,6 @@
 <script>
     import { onMount } from 'svelte';
-    import { getProjectById } from '$lib/api';
+    import { getProjectById, addCard, removeCard } from '$lib/api';
     import { page } from '$app/state';
 
     let project = {};
@@ -9,19 +9,42 @@
     let columns = {};
 
     let userId = page.params.id;
-    let projectId = page.params.projectId;  // From the [projectId] part
+    let projectId = page.params.projectId;
 
     onMount(async () => {
+        await loadPage()
+    });
+
+    async function loadPage() {
         try {
             project = await getProjectById(userId, projectId);
+            if (project.workflow?.cards) {
+                columns = Object.entries(project.workflow.cards).map(([title, tasks]) => ({
+                    title,
+                    tasks
+                }));
+            }
         } catch (error) {
             errorMessage = 'Failed to load project data';
             console.error('Error:', error);
         } finally {
             loading = false;
         }
-    });
+    }
 
+    function deleteTask(columnIndex, taskIndex) {
+        columns = columns.map((col, idx) => {
+            if (idx === columnIndex) {
+                return {
+                    ...col,
+                    tasks: col.tasks.filter((_, i) => i !== taskIndex)
+                };
+            }
+            return col;
+        });
+
+        // TODO: Optional — call backend here to persist the deletion
+    }
 
     let draggedTask = null;
     let draggedColumnIndex = null;
@@ -122,6 +145,65 @@
             return column;
         });
     }
+
+    let showAddCardModal = false;
+    let newColumnName = '';
+
+    let showDeleteCardModal = false;
+    let columnToDeleteIndex = null;
+
+    let cardDTO = {
+        cardName: '',
+    };
+
+
+    // Opens Add Card modal
+    function openAddCardModal() {
+        showAddCardModal = true;
+        newColumnName = '';
+    }
+
+    // Confirms Add Card
+    async function confirmAddCard() {
+        if (newColumnName.trim()) {
+            cardDTO.cardName = newColumnName.trim();
+
+            try {
+                await addCard(userId, projectId, cardDTO);
+                showAddCardModal = false;
+
+                await loadPage();
+            } catch (err) {
+                console.error("Failed to add card:", err);
+            }
+        }
+    }
+
+    // Opens Delete Card modal
+    function openDeleteCardModal(index) {
+        columnToDeleteIndex = index;
+        showDeleteCardModal = true;
+    }
+
+    // Confirms Delete Card
+    async function confirmDeleteCard() {
+        const columnTitle = columns[columnToDeleteIndex]?.title;
+
+        if (columnTitle) {
+            cardDTO.cardName = columnTitle;
+
+            try {
+                await removeCard(userId, projectId, cardDTO);
+                showDeleteCardModal = false;
+                columnToDeleteIndex = null;
+
+                await loadPage();
+            } catch (err) {
+                console.error("Failed to remove card:", err);
+            }
+        }
+    }
+
 </script>
 <div class="bg-gray-50 min-h-screen flex flex-col">
     <!-- Header and controls section -->
@@ -144,14 +226,58 @@
 
     <!-- Main content area with the Kanban board -->
     <div class="flex-1 p-6 overflow-hidden">
+
+        {#if showAddCardModal}
+            <div class="fixed inset-0 z-50 flex items-center justify-center bg-opacity-200" on:click={() => showAddCardModal = false}>
+                <div class="bg-white p-8 rounded-lg max-w-md w-full shadow-lg" on:click|stopPropagation>
+                    <h3 class="text-lg font-medium text-gray-900">Add New Column</h3>
+                    <input
+                            type="text"
+                            bind:value={newColumnName}
+                            placeholder="Enter column name"
+                            class="mt-4 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                    <div class="flex justify-end gap-4 mt-6">
+                        <button class="px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100" on:click={() => showAddCardModal = false}>
+                            Cancel
+                        </button>
+                        <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" on:click={confirmAddCard}>
+                            Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {/if}
+        {#if showDeleteCardModal}
+            <div class="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50" on:click={() => showDeleteCardModal = false}>
+                <div class="bg-white p-8 rounded-lg max-w-md w-full shadow-lg" on:click|stopPropagation>
+                    <h3 class="text-lg font-medium text-gray-900">Delete Column</h3>
+                    <p class="mt-2 text-gray-600">
+                        Are you sure you want to delete the column "{columns[columnToDeleteIndex]?.title}"? This will remove all tasks in it.
+                    </p>
+                    <div class="flex justify-end gap-4 mt-6">
+                        <button
+                                class="px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100"
+                                on:click={() => showDeleteCardModal = false}>
+                            Cancel
+                        </button>
+                        <button
+                                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                                on:click={() => confirmDeleteCard()}>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {/if}
+
         <div class="container mx-auto h-full flex flex-col">
             <!-- Horizontal scroll container -->
             <div class="flex-1 overflow-x-scroll pb-4 scrollbar scrollbar-thumb-gray-400 scrollbar-track-gray-600">
             <!-- Columns container - will expand horizontally as needed -->
                 <div class="inline-flex space-x-6 w-max h-full">
                     {#each columns as column, columnIndex (column.title)}
-                        <div
-                                class="flex-shrink-0 w-1/5 h-full flex flex-col"
+                        <div class="flex-shrink-0 w-80 min-w-[20rem] max-w-[20rem] h-full flex flex-col"
                                 on:drop={() => dropTask(columnIndex)}
                                 on:dragover={(e) => e.preventDefault()}
                                 on:dragenter={() => dragOverColumn(columnIndex)}
@@ -160,7 +286,20 @@
                         >
                             <div class="bg-white rounded-lg shadow h-full flex flex-col">
                                 <div class="p-4 border-b border-gray-200 bg-gray-200 rounded-t-sm">
-                                    <h2 class="font-semibold text-lg">{column.title}</h2>
+                                    <div class="flex items-center justify-between">
+                                        <h2 class="font-semibold text-lg truncate">{column.title}</h2>
+                                        <button
+                                                on:click={() => openDeleteCardModal(columnIndex)}
+                                                class="text-gray-500 hover:text-red-600 transition"
+                                                aria-label="Delete column"
+                                        >
+                                            <!-- Trash SVG Icon -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="p-4 space-y-0 flex-1 overflow-y-auto">
                                     {#each column.tasks as task, index (task.id)}
@@ -178,26 +317,27 @@
                                     }}
                                         ></div>
 
-                                        <div
-                                                class="task bg-white p-3 rounded border border-gray-200 shadow-sm hover:shadow cursor-move transition-all"
-                                                draggable="true"
+                                        <div class="task bg-white p-3 rounded border border-gray-200 shadow-sm hover:shadow cursor-move transition-all"
+
+                                             draggable="true"
                                                 on:dragstart={() => dragStart(task, columnIndex, index)}
                                                 on:dragend={() => {
-                                        draggedTask = null;
-                                        draggedColumnIndex = null;
-                                        draggedIndex = null;
-                                        hoveredColumnIndex = null;
-                                        hoveredIndex = null;
-                                    }}
+                                                    draggedTask = null;
+                                                    draggedColumnIndex = null;
+                                                    draggedIndex = null;
+                                                    hoveredColumnIndex = null;
+                                                    hoveredIndex = null;
+                                                }}
                                                 class:task-dragging={draggedColumnIndex === columnIndex && draggedIndex === index}
                                         >
-                                            <h3 class="font-medium text-gray-800">{task.title}</h3>
-                                            <p class="text-sm text-gray-600 mt-2">{task.description}</p>
-                                            <div class="flex justify-between items-center mt-3">
+                                            <h3 class="font-medium text-gray-800 truncate">{task.title}</h3>
+                                            <p class="text-sm text-gray-600 mt-2 overflow-hidden text-ellipsis line-clamp-3">{task.description}</p>
+                                            <div class="flex justify-between items-center mt-auto pt-3">
                                                 <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">{task.tag}</span>
                                                 <span class="text-xs text-gray-500">{task.due}</span>
                                             </div>
                                         </div>
+
                                     {/each}
 
                                     <!-- Drop zone at the bottom of the column -->
@@ -227,6 +367,14 @@
                             </div>
                         </div>
                     {/each}
+                    <div class="flex-shrink-0 w-80 min-w-[20rem] max-w-[20rem] h-full flex items-center justify-center">
+                        <button
+                                class="w-full py-2 px-4 text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-100 transition"
+                                on:click={openAddCardModal}
+                        >
+                            + Add Column
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

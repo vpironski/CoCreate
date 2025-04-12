@@ -60,7 +60,7 @@ api.interceptors.response.use(response => response, error => {
 });
 
 function handleApiError(error) {
-    return error.response?.data?.error || error.message || 'An unexpected error occurred';
+    return error.response?.data?.error;
 }
 
 export async function registerUser(username, email, password) {
@@ -159,12 +159,9 @@ export async function getProjectCustomFields(userId) {
 
 export async function createProject(userId, project) {
     try {
-        console.log("Making API call to create project:", `/${userId}/dashboard/create-project`);
         const response = await api.post(`/${userId}/dashboard/create-project`, project);
-        console.log("Project creation successful:", response.data);
         return response.data;
     } catch (error) {
-        console.error("API error details:", error.response?.status, error.response?.data);
         throw new Error(handleApiError(error));
     }
 }
@@ -188,12 +185,32 @@ export async function deleteProject(userId, projectId) {
     }
 }
 
+export async function addCard(userId, projectId, cardDTO){
+    try{
+        const response = await api.post(`/${userId}/dashboard/${projectId}/add-card`, cardDTO);
+        return response.data
+    } catch (error) {
+        throw new Error(handleApiError(error))
+    }
+}
+
+export async function removeCard(userId, projectId, cardDTO){
+    try{
+        const response = await api.delete(`/${userId}/dashboard/${projectId}/remove-card`, {
+            data: cardDTO
+        });
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error))
+    }
+}
+
+
 export async function getTasksForProject(userId, projectId) {
     try {
         const response = await api.get(`/${userId}/${projectId}`);
         return response.data.tasks || [];
     } catch (error) {
-        console.error("Logout error:", error);
         throw new Error(handleApiError(error));
     }
 }

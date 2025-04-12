@@ -4,6 +4,7 @@ import org.cocreate.CoCreate.exception.EntityNotFoundException;
 import org.cocreate.CoCreate.model.entity.AuditLog;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
+import org.cocreate.CoCreate.model.record.ResponseMessage;
 import org.cocreate.CoCreate.repository.AuditRepository;
 import org.cocreate.CoCreate.repository.ProjectRepository;
 import org.slf4j.Logger;
@@ -25,17 +26,17 @@ public class AdminService {
         this.userService = userService;
     }
 
-    public boolean restoreProject(String userId, String projectId) {
+    public ResponseMessage restoreProject(String userId, String projectId) {
         AuditLog auditLog = auditLogRepository.findByEntityIdAndUserId(projectId, userId)
                 .orElseThrow(() -> new EntityNotFoundException("No deleted project found with ID: " + projectId + " for user " + userId));
 
         Project restoredProject = (Project) auditLog.getOriginalData();
 
         projectRepository.save(restoredProject);
-        auditLogRepository.delete(auditLog); // Remove from audit log after restoration
+        auditLogRepository.delete(auditLog);
 
         logger.info("User {} restored project {}", userId, projectId);
-        return true;
+        return new ResponseMessage("Project restored successfully!");
     }
 
     private Task restoreTask(String taskId, String userId) {
