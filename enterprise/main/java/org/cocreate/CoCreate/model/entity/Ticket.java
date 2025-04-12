@@ -3,7 +3,6 @@ package org.cocreate.CoCreate.model.entity;
 import lombok.Getter;
 import lombok.Setter;
 import org.cocreate.CoCreate.model.enums.Priority;
-import org.cocreate.CoCreate.model.enums.TicketStatus;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
