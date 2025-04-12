@@ -5,8 +5,7 @@ import lombok.Setter;
 import org.cocreate.CoCreate.model.enums.Priority;
 import org.cocreate.CoCreate.model.enums.TaskStatus;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.time.LocalDate;
 
 @Setter
 @Getter
@@ -17,16 +16,14 @@ public class Task {
 
     private String description;
 
-    private List<String> assignedUsers;
+//    private List<String> assignedUsers;
 
-    private LocalDateTime startDate;
+    private LocalDate startDate;
 
-    private LocalDateTime endDate;
+    private LocalDate endDate;
 
     private Priority priority;
 
     private TaskStatus status;
-
-    private List<String> dependencies;
 
 }

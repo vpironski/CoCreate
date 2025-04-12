@@ -1,6 +1,6 @@
 <script>
     import { onMount } from 'svelte';
-    import { getProjectById, addCard, removeCard } from '$lib/api';
+    import { getProjectById, addCard, removeCard, createTask, deleteTask} from '$lib/api';
     import { page } from '$app/state';
 
     let project = {};
@@ -32,20 +32,6 @@
         }
     }
 
-    function deleteTask(columnIndex, taskIndex) {
-        columns = columns.map((col, idx) => {
-            if (idx === columnIndex) {
-                return {
-                    ...col,
-                    tasks: col.tasks.filter((_, i) => i !== taskIndex)
-                };
-            }
-            return col;
-        });
-
-        // TODO: Optional — call backend here to persist the deletion
-    }
-
     let draggedTask = null;
     let draggedColumnIndex = null;
     let draggedIndex = null;
@@ -71,7 +57,6 @@
     function dropTask(columnIndex, dropIndex = null) {
         if (!draggedTask || draggedColumnIndex === null) return;
 
-        // 1. Remove task from original column
         let taskToMove = null;
         columns = columns.map((column, idx) => {
             if (idx === draggedColumnIndex) {
@@ -86,19 +71,16 @@
 
         if (!taskToMove) return;
 
-        // 2. Insert into new column
         columns = columns.map((column, idx) => {
             if (idx === columnIndex) {
                 let newTasks = [...column.tasks];
 
-                // Default dropIndex to end if null or invalid
                 const validIndex = dropIndex !== null && dropIndex >= 0 && dropIndex <= newTasks.length
                     ? dropIndex
                     : newTasks.length;
 
                 newTasks.splice(validIndex, 0, taskToMove);
 
-                // 3. Reassign order values to all tasks in the column
                 newTasks = newTasks.map((t, i) => ({
                     ...t,
                     order: i
@@ -112,7 +94,6 @@
             return column;
         });
 
-        // 4. Reset drag state
         draggedTask = null;
         draggedColumnIndex = null;
         draggedIndex = null;
@@ -120,30 +101,80 @@
         hoveredIndex = null;
     }
 
-    // Add new task
-    function addTask(columnIndex) {
-        columns = columns.map((column, idx) => {
-            if (idx === columnIndex) {
-                const newOrder = column.tasks.length > 0
-                    ? column.tasks[column.tasks.length - 1].order + 1
-                    : 0;
+    let showAddTaskModal = false;
+    let selectedColumnIndex = null;
 
-                const newTask = {
-                    id: Date.now(),
-                    title: "New Task",
-                    description: "Task description",
-                    tag: "General",
-                    due: "No due date",
-                    order: newOrder
-                };
+    let newTask = {
+        title: '',
+        description: '',
+        startDate: '',
+        endDate: '',
+        parentTask: '',
+        priority: 'MEDIUM'
+    };
 
-                return {
-                    ...column,
-                    tasks: [...column.tasks, newTask]
-                };
-            }
-            return column;
-        });
+    function openAddTaskModal(columnIndex) {
+        selectedColumnIndex = columnIndex;
+        showAddTaskModal = true;
+        newTask = {
+            title: '',
+            description: '',
+            startDate: '',
+            endDate: '',
+            parentTask: '',
+            priority: 'MEDIUM'
+        };
+    }
+
+    function closeAddTaskModal() {
+        showAddTaskModal = false;
+    }
+
+    async function confirmAddTask() {
+        if (!newTask.title.trim()) return;
+
+        const columnName = columns[selectedColumnIndex]?.title;
+
+        const task = {
+            ...newTask,
+            card: columnName,
+        };
+        console.log(columnName)
+        try {
+            await createTask(userId, projectId, task);
+            closeAddTaskModal();
+
+            await loadPage();
+        } catch (err) {
+            console.error("Failed to create task:", err);
+        }
+
+    }
+
+    let showDeleteTaskModal = false;
+    let taskToDelete = null;
+
+    function openDeleteTaskModal(task) {
+        taskToDelete = task; // Store the task to be deleted
+        showDeleteTaskModal = true;
+    }
+
+    function closeDeleteTaskModal() {
+        showDeleteTaskModal = false;
+        taskToDelete = null;
+    }
+
+    async function confirmDeleteTask() {
+        if (!taskToDelete) return;
+
+        try {
+            await deleteTask(userId, projectId, taskToDelete.id);
+            closeDeleteTaskModal();
+
+            await loadPage();
+        } catch (err) {
+            console.error("Failed to delete task:", err);
+        }
     }
 
     let showAddCardModal = false;
@@ -156,8 +187,6 @@
         cardName: '',
     };
 
-
-    // Opens Add Card modal
     function openAddCardModal() {
         showAddCardModal = true;
         newColumnName = '';
@@ -179,7 +208,6 @@
         }
     }
 
-    // Opens Delete Card modal
     function openDeleteCardModal(index) {
         columnToDeleteIndex = index;
         showDeleteCardModal = true;
@@ -226,7 +254,84 @@
 
     <!-- Main content area with the Kanban board -->
     <div class="flex-1 p-6 overflow-hidden">
+        {#if showAddTaskModal}
+            <div class="fixed inset-0 z-50 flex items-center justify-center bg-opacity-200" on:click={() => closeAddTaskModal()}>
+                <div class="bg-white p-8 rounded-lg max-w-md w-full shadow-lg" on:click|stopPropagation>
+                    <h3 class="text-lg font-medium text-gray-900">Add New Task</h3>
 
+                    <!-- Task Name -->
+                    <input
+                            type="text"
+                            bind:value={newTask.title}
+                            placeholder="Enter task name"
+                            class="mt-4 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+
+                    <!-- Description -->
+                    <textarea
+                            bind:value={newTask.description}
+                            placeholder="Task description"
+                            class="mt-3 w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    ></textarea>
+
+                    <!-- Start Date (Date only) -->
+                    <label class="block mt-3 text-sm text-gray-700">Start Date</label>
+                    <input
+                            type="date"
+                            bind:value={newTask.startDate}
+                            class="w-full p-2 border border-gray-300 rounded"
+                    />
+
+                    <!-- End Date (Date only) -->
+                    <label class="block mt-3 text-sm text-gray-700">End Date</label>
+                    <input
+                            type="date"
+                            bind:value={newTask.endDate}
+                            class="w-full p-2 border border-gray-300 rounded"
+                    />
+
+                    <!-- Priority -->
+                    <label class="block mt-3 text-sm text-gray-700">Priority</label>
+                    <select
+                            bind:value={newTask.priority}
+                            class="w-full p-2 border border-gray-300 rounded"
+                    >
+                        <option value="LOW">Low</option>
+                        <option value="MEDIUM">Medium</option>
+                        <option value="HIGH">High</option>
+                        <option value="URGENT">Urgent</option>
+                    </select>
+
+                    <!-- Actions -->
+                    <div class="flex justify-end gap-4 mt-6">
+                        <button class="px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100" on:click={() => closeAddTaskModal()}>
+                            Cancel
+                        </button>
+                        <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" on:click={confirmAddTask}>
+                            Add Task
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {/if}
+        {#if showDeleteTaskModal}
+            <div class="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50" on:click={() => closeDeleteTaskModal()}>
+                <div class="bg-white p-8 rounded-lg max-w-md w-full shadow-lg" on:click|stopPropagation>
+                    <h3 class="text-lg font-medium text-gray-900">Delete Task</h3>
+                    <p class="mt-2 text-gray-600">
+                        Are you sure you want to delete the task "{taskToDelete?.title}"? This action cannot be undone.
+                    </p>
+                    <div class="flex justify-end gap-4 mt-6">
+                        <button class="px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100" on:click={() => closeDeleteTaskModal()}>
+                            Cancel
+                        </button>
+                        <button class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700" on:click={() => confirmDeleteTask()}>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {/if}
         {#if showAddCardModal}
             <div class="fixed inset-0 z-50 flex items-center justify-center bg-opacity-200" on:click={() => showAddCardModal = false}>
                 <div class="bg-white p-8 rounded-lg max-w-md w-full shadow-lg" on:click|stopPropagation>
@@ -330,11 +435,31 @@
                                                 }}
                                                 class:task-dragging={draggedColumnIndex === columnIndex && draggedIndex === index}
                                         >
-                                            <h3 class="font-medium text-gray-800 truncate">{task.title}</h3>
-                                            <p class="text-sm text-gray-600 mt-2 overflow-hidden text-ellipsis line-clamp-3">{task.description}</p>
+                                            <div class="flex items-center justify-between">
+                                                <h3 class="font-medium text-gray-800 truncate">{task.title}</h3>
+                                                <button
+                                                        class="text-gray-500 hover:text-red-600 transition"
+                                                        on:click={() => openDeleteTaskModal(task)}
+                                                        aria-label="Delete task"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+
                                             <div class="flex justify-between items-center mt-auto pt-3">
-                                                <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">{task.tag}</span>
-                                                <span class="text-xs text-gray-500">{task.due}</span>
+                                                {#if task.priority === 'LOW'}
+                                                    <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-800">Low</span>
+                                                {:else if task.priority === 'MEDIUM'}
+                                                    <span class="ptext-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">Medium</span>
+                                                {:else if task.priority === 'HIGH'}
+                                                    <span class="text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-800">High</span>
+                                                {:else if task.priority === 'URGENT'}
+                                                    <span class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-800">Urgent</span>
+                                                {/if}
+                                                <span class="text-xs text-gray-500">{task.endDate}</span>
                                             </div>
                                         </div>
 
@@ -356,7 +481,7 @@
 
                                     <button
                                             class="w-full py-2 text-sm text-gray-500 hover:text-gray-700 flex items-center justify-center mt-2"
-                                            on:click={() => addTask(columnIndex)}
+                                            on:click={() => openAddTaskModal(columnIndex)}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />

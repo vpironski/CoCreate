@@ -205,19 +205,9 @@ export async function removeCard(userId, projectId, cardDTO){
     }
 }
 
-
-export async function getTasksForProject(userId, projectId) {
-    try {
-        const response = await api.get(`/${userId}/${projectId}`);
-        return response.data.tasks || [];
-    } catch (error) {
-        throw new Error(handleApiError(error));
-    }
-}
-
 export async function createTask(userId, projectId, task) {
     try {
-        const response = await api.post(`/${userId}/${projectId}/task`, task);
+        const response = await api.post(`/${userId}/dashboard/${projectId}/task`, task);
         return response.data;
     } catch (error) {
         throw new Error(handleApiError(error));
@@ -235,7 +225,16 @@ export async function updateTask(userId, projectId, taskId, updatedTask) {
 
 export async function deleteTask(userId, projectId, taskId) {
     try {
-        const response = await api.delete(`/${userId}/${projectId}/${taskId}/delete`);
+        const response = await api.delete(`/${userId}/dashboard/${projectId}/${taskId}/delete`);
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
+export async function reorderColumns(userId, projectId, newOrder) {
+    try {
+        const response = await api.put(`/${userId}/dashboard/${projectId}/reorderColumns`, { newOrder });
         return response.data;
     } catch (error) {
         throw new Error(handleApiError(error));

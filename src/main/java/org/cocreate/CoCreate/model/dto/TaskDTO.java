@@ -3,10 +3,9 @@ package org.cocreate.CoCreate.model.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
+import org.cocreate.CoCreate.model.enums.Priority;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -17,14 +16,14 @@ public class TaskDTO {
 
     private String card = "";
 
-    private List<String> userIds = new ArrayList<>();
+//    private List<String> userIds = new ArrayList<>();
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime startDate = LocalDateTime.now();
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate startDate = LocalDate.now();
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime endDate = LocalDateTime.now();
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate endDate = LocalDate.now();
 
-    private List<String> dependencies = new ArrayList<>();
+    private Priority priority = Priority.MEDIUM;
 
 }

@@ -4,7 +4,6 @@ import org.cocreate.CoCreate.model.dto.ProjectDTO;
 import org.cocreate.CoCreate.model.dto.TaskDTO;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
-import org.cocreate.CoCreate.model.enums.Priority;
 import org.cocreate.CoCreate.model.enums.ProjectStatus;
 import org.cocreate.CoCreate.model.enums.TaskStatus;
 import org.springframework.stereotype.Component;
@@ -89,11 +88,10 @@ public class ProjectTaskMapper {
         task.setDescription(taskDTO.getDescription());
         task.setStartDate(taskDTO.getStartDate());
         task.setEndDate(taskDTO.getEndDate());
-        task.setDependencies(taskDTO.getDependencies());
-        task.setAssignedUsers(taskDTO.getUserIds());
+//        task.setAssignedUsers(taskDTO.getUserIds());
+        task.setPriority(taskDTO.getPriority());
 
         task.setStatus(TaskStatus.IN_PROGRESS);
-        task.setPriority(Priority.MEDIUM);
 
         return task;
     }
@@ -108,9 +106,9 @@ public class ProjectTaskMapper {
         if (source.getDescription() != null && !source.getDescription().isEmpty()) {
             target.setDescription(source.getDescription());
         }
-        if (source.getAssignedUsers() != null && !source.getAssignedUsers().isEmpty()) {
-            target.setAssignedUsers(source.getAssignedUsers());
-        }
+//        if (source.getAssignedUsers() != null && !source.getAssignedUsers().isEmpty()) {
+//            target.setAssignedUsers(source.getAssignedUsers());
+//        }
         if (source.getStartDate() != null) {
             target.setStartDate(source.getStartDate());
         }
@@ -122,9 +120,6 @@ public class ProjectTaskMapper {
         }
         if (source.getStatus() != null) {
             target.setStatus(source.getStatus());
-        }
-        if (source.getDependencies() != null && !source.getDependencies().isEmpty()) {
-            target.setDependencies(source.getDependencies());
         }
     }
 }

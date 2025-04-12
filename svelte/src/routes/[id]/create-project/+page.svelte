@@ -280,29 +280,6 @@
                 </div>
             </div>
 
-            <!-- Parent Project -->
-            <div>
-                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="parent-project">
-                    Related Project (optional)
-                </label>
-                {#if isLoading}
-                    <select disabled class="block w-full bg-gray-300 text-gray-500 rounded-lg py-3 px-4">
-                        <option>Loading projects...</option>
-                    </select>
-                {:else}
-                    <select
-                            id="parent-project"
-                            bind:value={project.parentProjectId}
-                            class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white focus:border-teal-500 dark:bg-gray-700 dark:text-white"
-                    >
-                        <option value="">None (create new standalone project)</option>
-                        {#each projects as p}
-                            <option value={p.id}>{p.name}</option>
-                        {/each}
-                    </select>
-                {/if}
-            </div>
-
             <!-- Submit Button -->
             <div class="flex justify-end pt-4">
                 <button

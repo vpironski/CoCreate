@@ -93,10 +93,6 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.getTaskForEdit(userId, projectId, taskId));
     }
 
-    @GetMapping("/{projectId}/task")
-    public ResponseEntity<TaskDTO> createTask() {
-        return ResponseEntity.ok(new TaskDTO());
-    }
 
     @PostMapping("/{projectId}/task")
     public ResponseEntity<ResponseMessage> createTask(@PathVariable String userId,
