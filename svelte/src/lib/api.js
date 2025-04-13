@@ -166,10 +166,18 @@ export async function createProject(userId, project) {
     }
 }
 
+export async function getProjectForUpdate(userId, projectId) {
+    try {
+        const response = await api.get(`/${userId}/dashboard/edit-project/${projectId}`);
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
 
 export async function updateProject(userId, projectId, updatedProject) {
     try {
-        const response = await api.put(`/${userId}/edit-project/${projectId}`, updatedProject);
+        const response = await api.put(`/${userId}/dashboard/edit-project/${projectId}`, updatedProject);
         return response.data;
     } catch (error) {
         throw new Error(handleApiError(error));

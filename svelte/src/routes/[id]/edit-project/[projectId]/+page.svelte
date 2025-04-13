@@ -1,7 +1,22 @@
 <script>
+    import { onMount } from 'svelte';
+    import { page } from '$app/state';
     import { goto } from '$app/navigation';
-    import {getUserId, getAllProjects, getProjectCustomFields, createProject, isAuthenticated} from '$lib/api.js';
-    import { onMount } from "svelte";
+    import {
+        getAllProjects,
+        getProjectForUpdate,
+        updateProject
+    } from '$lib/api';
+
+    let username = '';
+
+    onMount(() => {
+        username = localStorage.getItem('username') || '';
+    });
+
+
+    let userId = page.params.id
+    let projectId = page.params.projectId;
 
     let project = {
         name: '',
@@ -9,66 +24,58 @@
         startDate: '',
         endDate: '',
         parentProjectId: '',
-        customFields: {},
-        priority: 'MEDIUM'
+        priority: 'MEDIUM',
+        customFields: {}
     };
 
     let customFieldDefinitions = [];
-
     let projects = [];
     let error = '';
-    let userId = getUserId();
     let isLoading = true;
 
     onMount(async () => {
         await loadInitialData();
-        if (!project.startDate) {
-            project.startDate = new Date().toISOString().split('T')[0];
-        }
-        if (!project.endDate) {
-            let defaultEndDate = new Date();
-            defaultEndDate.setMonth(defaultEndDate.getMonth() + 1);
-            project.endDate = defaultEndDate.toISOString().split('T')[0];
-        }
     });
 
     async function loadInitialData() {
-        isLoading = true;
-        error = '';
-        customFieldDefinitions = [];
-        let formCustomFieldsMap = {};
         try {
-            projects = await getAllProjects(userId);
-            const customFieldsResponse = await getProjectCustomFields(userId);
-            const fetchedFields = Array.isArray(customFieldsResponse?.customFields) ? customFieldsResponse.customFields : [];
+            const response = await getProjectForUpdate(userId, projectId);
+            project = {
+                ...response,
+                customFields: {}
+            };
 
-            fetchedFields.forEach(field => {
-                const fieldType = determineFieldType(field.value);
-                let initialValue = field.value;
+            customFieldDefinitions = [];
 
-                if (fieldType === 'date' && initialValue && typeof initialValue === 'string') {
-                    initialValue = initialValue.split('T')[0];
-                } else if (fieldType === 'datetime-local' && initialValue && typeof initialValue === 'string') {
-                    initialValue = initialValue.substring(0, 16);
+            if (Array.isArray(response.customFields?.customFields)) {
+                for (const field of response.customFields.customFields) {
+                    const type = determineFieldType(field.value);
+                    let initialValue = field.value;
+
+                    if (type === 'date' && typeof initialValue === 'string') {
+                        initialValue = initialValue.split('T')[0];
+                    } else if (type === 'datetime-local' && typeof initialValue === 'string') {
+                        initialValue = initialValue.substring(0, 16);
+                    }
+
+                    customFieldDefinitions.push({
+                        name: field.name,
+                        type,
+                        originalValue: initialValue
+                    });
+
+                    project.customFields[field.name] = initialValue;
                 }
+            }
 
-                customFieldDefinitions.push({
-                    name: field.name,
-                    type: fieldType,
-                    originalValue: initialValue
-                });
+            projects = await getAllProjects(userId);
 
-                formCustomFieldsMap[field.name] = initialValue;
-            });
-
-            project.customFields = formCustomFieldsMap;
-            project = project;
-            customFieldDefinitions = customFieldDefinitions;
-
-        } catch (err) {
-            console.error("Initialization failed:", err);
-            error = "Failed to load project settings. Please try again.";
-            if (err?.response?.data?.message) { error = err.response.data.message; } else if (err.message) { error = err.message; }
+            if (projectId) {
+                projects = projects.filter(p => p.id !== projectId);
+            }
+        } catch (e) {
+            console.error('Failed to load project', e);
+            error = e.message || 'Error loading project';
         } finally {
             isLoading = false;
         }
@@ -78,7 +85,7 @@
         if (typeof value === 'boolean') return 'checkbox';
         if (typeof value === 'number') return 'number';
         if (typeof value === 'string') {
-            if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?/.test(value)) return 'datetime-local';
+            if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)) return 'datetime-local';
             if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return 'date';
         }
         return 'text';
@@ -95,57 +102,37 @@
         error = '';
         isLoading = true;
         try {
-
-            const processedCustomFieldsArray = [];
-            for (const fieldDef of customFieldDefinitions) {
-                const name = fieldDef.name;
-                const type = fieldDef.type;
-                let currentValue = project.customFields[name];
-
-                // Process value based on type
-                if (type === 'number') {
-                    currentValue = (currentValue === '' || currentValue === null || isNaN(parseFloat(currentValue))) ? 0 : parseFloat(currentValue);
-                } else if (type === 'checkbox') {
-                    currentValue = Boolean(currentValue);
-                } else if (type === 'date') {
-                    currentValue = currentValue || null;
-                } else if (type === 'datetime-local') {
-                    currentValue = currentValue || null;
-                } else { // text
-                    currentValue = (currentValue === null || currentValue === undefined) ? "" : String(currentValue);
+            const processedCustomFieldsArray = customFieldDefinitions.map(def => {
+                let value = project.customFields[def.name];
+                if (def.type === 'checkbox') {
+                    value = Boolean(value);
+                } else if (def.type === 'number') {
+                    value = parseFloat(value) || 0;
+                } else if (def.type === 'datetime-local') {
+                    value = value || null;
+                } else if (def.type === 'date') {
+                    value = value || null;
+                } else {
+                    value = value || '';
                 }
 
-                processedCustomFieldsArray.push({
-                    name: name,
-                    value: currentValue
-                });
-            }
+                return {
+                    name: def.name,
+                    value
+                };
+            });
 
-            const formattedProject = {
-                name: project.name,
-                description: project.description,
-                startDate: project.startDate || null,
-                endDate: project.endDate || null,
-                parentProjectId: project.parentProjectId || null,
-                priority: project.priority,
+            const updatedProject = {
+                ...project,
                 customFields: {
                     customFields: processedCustomFieldsArray
                 }
             };
 
-            await createProject(userId, formattedProject);
-            console.log("Project creation successful, navigating to dashboard");
-
+            await updateProject(userId, projectId, updatedProject);
             await goto(`/${userId}/dashboard`);
-
         } catch (err) {
-            console.error("Project creation failed:", err);
-            error = err.message || "An unexpected error occurred.";
-
-            if (!isAuthenticated()) {
-                console.error("Lost authentication during request");
-                error += " Session expired. Please log in again.";
-            }
+            error = err.message || 'Update failed';
         } finally {
             isLoading = false;
         }
@@ -153,9 +140,10 @@
 </script>
 
 
+
 <div class="min-h-screen flex items-start justify-center pt-16 md:pt-24 px-4 md:px-8">
     <div class="w-full max-w-3xl bg-white rounded-3xl shadow-xl p-6 md:p-10 dark:bg-gray-800 transition-all duration-300 mt-8 md:mt-16">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">Create New Project</h2>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">Edit Project</h2>
 
         {#if error}
             <div class="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">{error}</div>
@@ -216,6 +204,27 @@
                 </div>
             </div>
 
+            <!-- Status -->
+            <div>
+                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+                    Priority
+                </label>
+                <div class="flex space-x-4">
+                    {#each ['DRAFT', 'ACTIVE', 'COMPLETED', 'ARCHIVED'] as status}
+                        <label for="status" class="inline-flex items-center">
+                            <input
+                                    id="status"
+                                    type="radio"
+                                    bind:group={project.status}
+                                    value={status}
+                                    class="form-radio h-5 w-5 text-teal-600 dark:text-teal-400"
+                            />
+                            <span class="ml-2 text-gray-700 dark:text-gray-300">{status}</span>
+                        </label>
+                    {/each}
+                </div>
+            </div>
+
             <!-- Priority -->
             <div>
                 <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
@@ -237,7 +246,7 @@
                 </div>
             </div>
 
-            <!-- Parent Project Selection -->
+            <!-- Parent Project -->
             <div>
                 <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
                     Parent Project
@@ -252,7 +261,6 @@
                     {/each}
                 </select>
             </div>
-
 
             <!-- Custom Fields -->
             <div>
