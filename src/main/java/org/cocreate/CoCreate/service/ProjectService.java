@@ -7,7 +7,7 @@ import org.cocreate.CoCreate.model.dto.TaskDTO;
 import org.cocreate.CoCreate.model.entity.*;
 import org.cocreate.CoCreate.model.entity.custom.fields.CustomFields;
 import org.cocreate.CoCreate.model.entity.custom.fields.impl.*;
-import org.cocreate.CoCreate.model.record.CardDTO;
+import org.cocreate.CoCreate.model.dto.CardDTO;
 import org.cocreate.CoCreate.model.record.ResponseMessage;
 import org.cocreate.CoCreate.repository.AuditRepository;
 import org.cocreate.CoCreate.repository.ProjectRepository;

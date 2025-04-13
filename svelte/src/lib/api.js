@@ -128,6 +128,33 @@ export function isAuthenticated() {
     }
 }
 
+export async function getUser(userId){
+    try{
+        const response = await api.get(`/user/${userId}`)
+        return response.data
+    }catch (error){
+        throw new Error(handleApiError(error))
+    }
+}
+
+export async function addField(userId, field) {
+    try {
+        const response = await api.post(`/user/${userId}/add-field`, field);
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
+export async function removeField(userId, field) {
+    try {
+        const response = await api.post(`/user/${userId}/remove-field`, field);
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
 export async function getAllProjects(userId) {
     try {
         const response = await api.get(`/${userId}/dashboard`);

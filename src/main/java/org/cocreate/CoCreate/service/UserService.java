@@ -1,9 +1,11 @@
 package org.cocreate.CoCreate.service;
 
 import org.cocreate.CoCreate.exception.UserException;
-import org.cocreate.CoCreate.model.record.UserRegisterDTO;
+import org.cocreate.CoCreate.model.dto.FieldSettingDTO;
+import org.cocreate.CoCreate.model.dto.UserRegisterDTO;
 import org.cocreate.CoCreate.model.entity.User;
 import org.cocreate.CoCreate.model.enums.UserRole;
+import org.cocreate.CoCreate.model.record.ResponseMessage;
 import org.cocreate.CoCreate.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -69,6 +71,22 @@ public class UserService {
         User user = getUserById(userId);
         userRepository.delete(user);
         return true;
+    }
+
+    public ResponseMessage addField(String userId, FieldSettingDTO dto) {
+        User user = getUserById(userId);
+        user.getFieldSettings().put(dto.name(), dto.type());
+        userRepository.save(user);
+
+        return new ResponseMessage("New field added");
+    }
+
+    public ResponseMessage removeField(String userId, FieldSettingDTO dto) {
+        User user = getUserById(userId);
+        user.getFieldSettings().remove(dto.name());
+        userRepository.save(user);
+
+        return new ResponseMessage("Field " + dto.name() + "removed");
     }
 }
 

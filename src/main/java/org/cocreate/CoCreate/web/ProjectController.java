@@ -4,7 +4,7 @@ import org.cocreate.CoCreate.exception.BadRequestException;
 import org.cocreate.CoCreate.model.dto.ProjectDTO;
 import org.cocreate.CoCreate.model.dto.TaskDTO;
 import org.cocreate.CoCreate.model.entity.custom.fields.CustomFields;
-import org.cocreate.CoCreate.model.record.CardDTO;
+import org.cocreate.CoCreate.model.dto.CardDTO;
 import org.cocreate.CoCreate.model.record.ResponseMessage;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;

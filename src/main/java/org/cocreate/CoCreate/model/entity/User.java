@@ -25,18 +25,8 @@ public class User {
     @Field("password")
     private String password;
 
-    @Field("assigned_tickets")
-    private List<String> assignedTickets;
-
-    @Field("company_roles")
-    // Roles within the company or department
-    private List<String> companyRole;
-
     @Field("roles")
     private List<UserRole> roles;
-
-    @Field("personal_projects")
-    private List<String> personalProjects;
 
     @Field("created_at")
     private LocalDateTime createdAt;

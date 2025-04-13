@@ -10,6 +10,9 @@
     let username = '';
     let message = ''
 
+    let showDropdown = false;
+    const toggleDropdown = () => showDropdown = !showDropdown;
+
     $: layoutClasses = $page.data.showNavbar ?? true ? 'min-h-screen overflow-y-auto ml-0 md:ml-64 pt-16' : '';
 
     onMount(() => {
@@ -80,41 +83,50 @@
                 </div>
                 <div class="flex items-center">
                     <div class="flex items-center ms-3 group relative">
-                        <div class="flex items-center gap-2">
+                        <div class="relative flex items-center gap-2">
                             {#if username}
-                                <span class="text-xl font-medium">
-                                    {username}
-                                </span>
+                                <span class="text-xl font-medium">{username}</span>
                             {/if}
-                            <img
-                                    class="w-8 h-8 rounded-full bg-gray-200"
-                                    src={`https://ui-avatars.com/api/?name=${username || 'U'}&background=random`}
-                                    alt="User avatar"
-                            />
-                        </div>
 
-                        <!-- Dropdown menu -->
-                        <div class="absolute right-0 top-full mt-2 w-48 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200">
-                            <div class="bg-white divide-y divide-gray-100 rounded-sm shadow-lg dark:bg-gray-700 dark:divide-gray-600">
-                                <ul class="py-1">
-                                    <li>
-                                        <button
-                                                on:click={handleSignOut}
-                                                class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
-                                        >
-                                           Your Profile
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button
-                                                on:click={handleSignOut}
-                                                class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
-                                        >
-                                            Sign out
-                                        </button>
-                                    </li>
-                                </ul>
-                            </div>
+                            <button on:click={toggleDropdown} class="focus:outline-none">
+                                <img
+                                        class="w-8 h-8 rounded-full bg-gray-200"
+                                        src={`https://ui-avatars.com/api/?name=${username || 'U'}&background=random`}
+                                        alt="User avatar"
+                                />
+                            </button>
+
+                            <!-- Dropdown -->
+                            {#if showDropdown}
+                                <div class="absolute right-0 top-full mt-2 w-48 z-50 bg-white divide-y divide-gray-100 rounded-sm shadow-lg dark:bg-gray-700 dark:divide-gray-600">
+                                    <ul class="py-1">
+                                        <li class="block md:hidden">
+                                            <a
+                                                    href={userId ? `/${userId}/dashboard` : '/'}
+                                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
+                                            >
+                                                Dashboard
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a
+                                                    href={userId ? `/${userId}` : '/'}
+                                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
+                                            >
+                                                Your profile
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <button
+                                                    on:click={handleSignOut}
+                                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
+                                            >
+                                                Sign out
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            {/if}
                         </div>
                     </div>
                 </div>

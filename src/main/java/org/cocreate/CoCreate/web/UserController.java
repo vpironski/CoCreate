@@ -1,9 +1,10 @@
 package org.cocreate.CoCreate.web;
 
 import org.cocreate.CoCreate.exception.BadRequestException;
+import org.cocreate.CoCreate.model.dto.FieldSettingDTO;
 import org.cocreate.CoCreate.model.record.AuthResponse;
 import org.cocreate.CoCreate.model.record.ResponseMessage;
-import org.cocreate.CoCreate.model.record.UserRegisterDTO;
+import org.cocreate.CoCreate.model.dto.UserRegisterDTO;
 import org.cocreate.CoCreate.model.entity.User;
 import org.cocreate.CoCreate.model.record.AuthRequest;
 import org.cocreate.CoCreate.service.CustomUserDetailsService;
@@ -74,6 +75,15 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(userId));
     }
 
+    @PostMapping("/{userId}/add-field")
+    public ResponseEntity<ResponseMessage> addField(@PathVariable String userId, @RequestBody FieldSettingDTO dto) {
+        return ResponseEntity.ok(userService.addField(userId, dto));
+    }
+
+    @PostMapping("/{userId}/remove-field")
+    public ResponseEntity<ResponseMessage> removeField(@PathVariable String userId, @RequestBody FieldSettingDTO dto) {
+        return ResponseEntity.ok(userService.removeField(userId, dto));
+    }
     @PutMapping("/{userId}")
     public ResponseEntity<ResponseMessage> updateUser(@PathVariable String userId, @RequestBody User user) {
         if (!userService.updateUser(userId, user)) {
