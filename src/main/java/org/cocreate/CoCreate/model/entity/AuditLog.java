@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.cocreate.CoCreate.model.enums.EntityType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -19,6 +20,7 @@ public class AuditLog {
     private String id;
     private String entityId;
     private String userId;
+    private EntityType type;
     private LocalDateTime deletedAt;
     private Object originalData; // Stores the full deleted object
 }

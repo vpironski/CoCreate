@@ -8,6 +8,7 @@ import org.cocreate.CoCreate.model.entity.*;
 import org.cocreate.CoCreate.model.entity.custom.fields.CustomFields;
 import org.cocreate.CoCreate.model.entity.custom.fields.impl.*;
 import org.cocreate.CoCreate.model.dto.CardDTO;
+import org.cocreate.CoCreate.model.enums.EntityType;
 import org.cocreate.CoCreate.model.record.ResponseMessage;
 import org.cocreate.CoCreate.repository.AuditRepository;
 import org.cocreate.CoCreate.repository.ProjectRepository;
@@ -141,6 +142,7 @@ public class ProjectService {
         auditLog.setUserId(userId);
         auditLog.setDeletedAt(LocalDateTime.now());
         auditLog.setOriginalData(existingProject);
+        auditLog.setType(EntityType.PROJECT);
         auditLogRepository.save(auditLog);
 
         projectRepository.delete(existingProject);

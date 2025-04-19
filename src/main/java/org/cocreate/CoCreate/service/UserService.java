@@ -1,12 +1,19 @@
 package org.cocreate.CoCreate.service;
 
+import org.cocreate.CoCreate.config.jwt.JwtUtils;
+import org.cocreate.CoCreate.exception.BadRequestException;
 import org.cocreate.CoCreate.exception.UserException;
 import org.cocreate.CoCreate.model.dto.FieldSettingDTO;
 import org.cocreate.CoCreate.model.dto.UserRegisterDTO;
 import org.cocreate.CoCreate.model.entity.User;
 import org.cocreate.CoCreate.model.enums.UserRole;
+import org.cocreate.CoCreate.model.record.AuthRequest;
+import org.cocreate.CoCreate.model.record.AuthResponse;
 import org.cocreate.CoCreate.model.record.ResponseMessage;
 import org.cocreate.CoCreate.repository.UserRepository;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,10 +24,53 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtils jwtUtils;
+    private final CustomUserDetailsService customUserDetailsService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtils jwtUtils, CustomUserDetailsService customUserDetailsService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtils = jwtUtils;
+        this.customUserDetailsService = customUserDetailsService;
+    }
+
+    public AuthResponse registerUser(UserRegisterDTO userDto) {
+        User user = createUser(userDto);
+        String token = jwtUtils.generateToken(user.getUsername());
+
+        return new AuthResponse(
+                "User registered successfully",
+                user.getId(),
+                user.getRole().toString(),
+                token
+        );
+    }
+
+    public AuthResponse login(AuthRequest request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.username(), request.password())
+        );
+
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(request.username());
+        String token = jwtUtils.generateToken(userDetails.getUsername());
+
+        User user = gerUserByUsername(request.username());
+        if (user == null) {
+            throw new BadRequestException("Invalid username or password");
+        }
+
+        return new AuthResponse(
+                "User logged in successfully",
+                user.getId(),
+                user.getRole().toString(),
+                token
+        );
+    }
+
+    public List<User> getAllUsers(){
+        return userRepository.findAll();
     }
 
     public User getUserById(String userId) {
@@ -39,7 +89,6 @@ public class UserService {
     }
 
     public User createUser(UserRegisterDTO userDto) {
-        // Check for existing users
         if (userRepository.findByEmail(userDto.email()).isPresent()) {
             throw new UserException("Email is already used");
         }
@@ -47,16 +96,15 @@ public class UserService {
             throw new UserException("Username is already used");
         }
 
-        // Create and save new user
         User user = new User();
         user.setEmail(userDto.email());
         user.setUsername(userDto.username());
         user.setPassword(passwordEncoder.encode(userDto.password()));
-        user.setRoles(List.of(UserRole.USER));
+        user.setRole(UserRole.USER);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
 
-        return userRepository.save(user); // Return the persisted user directly
+        return userRepository.save(user);
     }
 
     public boolean updateUser(String userId, User updatedUser) {

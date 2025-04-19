@@ -4,12 +4,16 @@ import org.cocreate.CoCreate.exception.EntityNotFoundException;
 import org.cocreate.CoCreate.model.entity.AuditLog;
 import org.cocreate.CoCreate.model.entity.Project;
 import org.cocreate.CoCreate.model.entity.Task;
+import org.cocreate.CoCreate.model.entity.User;
+import org.cocreate.CoCreate.model.enums.EntityType;
 import org.cocreate.CoCreate.model.record.ResponseMessage;
 import org.cocreate.CoCreate.repository.AuditRepository;
 import org.cocreate.CoCreate.repository.ProjectRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 @Service
@@ -24,6 +28,23 @@ public class AdminService {
         this.auditLogRepository = auditLogRepository;
         this.projectRepository = projectRepository;
         this.userService = userService;
+    }
+
+    public List<User> getAllUsers() {
+         return userService.getAllUsers();
+    }
+
+    public List<AuditLog> getAllAuditLogsForUser(String userId) {
+        return auditLogRepository.findAllByUserId(userId);
+    }
+
+
+    public List<Project> getDeletedProjects() {
+        return auditLogRepository.findAll()
+                .stream()
+                .filter(log -> log.getType() == EntityType.PROJECT)
+                .map(log -> (Project) log.getOriginalData())
+                .toList();
     }
 
     public ResponseMessage restoreProject(String userId, String projectId) {

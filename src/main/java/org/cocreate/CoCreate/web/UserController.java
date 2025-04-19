@@ -12,8 +12,6 @@ import org.cocreate.CoCreate.config.jwt.JwtUtils;
 import org.cocreate.CoCreate.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -36,38 +34,12 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> registerUser(@RequestBody UserRegisterDTO userDto) {
-        User user = userService.createUser(userDto);
-        String token = jwtUtils.generateToken(user.getUsername());
-
-        return ResponseEntity.ok(new AuthResponse(
-                "User registered successfully",
-                user.getId(),
-                token
-        ));
+        return ResponseEntity.ok(userService.registerUser(userDto));
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        // Authenticate user
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.username(), request.password())
-        );
-
-        // Generate token
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(request.username());
-        String token = jwtUtils.generateToken(userDetails.getUsername());
-
-        // Get user ID
-        User user = userService.gerUserByUsername(request.username());
-        if (user == null) {
-            throw new BadRequestException("Invalid username or password");
-        }
-
-        return ResponseEntity.ok(new AuthResponse(
-                "User logged in successfully",
-                user.getId(),
-                token
-        ));
+        return ResponseEntity.ok(userService.login(request));
     }
 
     @GetMapping("/{userId}")

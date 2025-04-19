@@ -85,6 +85,14 @@
     function goToEdit(projectId) {
         goto(`/${userId}/edit-project/${projectId}`);
     }
+
+    function goToCreate() {
+        if (userId) {
+            goto(`/${userId}/create-project`);
+        } else {
+            goto('/');
+        }
+    }
 </script>
 
 <style>
@@ -147,7 +155,10 @@
         <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
         <p class="mt-2 text-gray-600">Manage all your projects in one place</p>
         <div class="mt-4 flex space-x-4">
-            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center">
+            <button
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center"
+                    on:click={goToCreate()}
+            >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd"
                           d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"

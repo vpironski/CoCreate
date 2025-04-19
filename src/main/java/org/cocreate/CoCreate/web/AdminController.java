@@ -1,12 +1,16 @@
 package org.cocreate.CoCreate.web;
 
+import org.cocreate.CoCreate.model.entity.AuditLog;
+import org.cocreate.CoCreate.model.entity.User;
 import org.cocreate.CoCreate.model.record.ResponseMessage;
 import org.cocreate.CoCreate.service.AdminService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/admin/")
+@RequestMapping("/api/admin")
 public class AdminController {
 
     private final AdminService adminService;
@@ -15,9 +19,14 @@ public class AdminController {
         this.adminService = adminService;
     }
 
-    @GetMapping("/")
-    public String testReturn(){
-        return "Test";
+    @GetMapping("/users")
+    public List<User> showUsers() {
+        return adminService.getAllUsers();
+    }
+
+    @GetMapping("/audit-logs/{userId}")
+    public List<AuditLog> getAuditLogs(@PathVariable String userId) {
+        return adminService.getAllAuditLogsForUser(userId);
     }
 
     @PostMapping("{userId}/restore-project/{projectId}")

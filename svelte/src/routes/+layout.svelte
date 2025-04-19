@@ -1,14 +1,15 @@
 <script>
 	import '../app.css';
     import { page } from '$app/stores';
-    import { getUsername, getUserId, logoutUser } from '$lib/api';
+    import {getUsername, getUserId, logoutUser, getRole} from '$lib/api';
     import { goto } from '$app/navigation';
     import { onMount } from 'svelte';
     import { browser } from '$app/environment';
 
     let userId = '';
     let username = '';
-    let message = ''
+    let message = '';
+    let role = '';
 
     let showDropdown = false;
     const toggleDropdown = () => showDropdown = !showDropdown;
@@ -19,6 +20,8 @@
         if (browser) {
             userId = getUserId();
             username = getUsername();
+            role = getRole();
+            console.log(role)
         }
     });
 
@@ -157,6 +160,16 @@
                         <span class="ms-3">Dashboard</span>
                     </a>
                 </li>
+                {#if role === 'ADMIN'}
+                    <li>
+                        <a href="/admin/users" class="flex items-center p-2 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                            <svg class="shrink-0 w-5 h-5 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.5V21m-6-1.5V21m6-1.5a3 3 0 0 0-6 0M21 7.5c0 2.485-2.239 4.5-5 4.5s-5-2.015-5-4.5S13.239 3 16 3s5 2.015 5 4.5Zm-13 6A4.5 4.5 0 0 1 3 9c0-2.485 2.015-5 4.5-5S12 6.515 12 9a4.5 4.5 0 0 1-4.5 4.5Zm0 0A6.975 6.975 0 0 0 3 18.75V21h9v-2.25a6.975 6.975 0 0 0-4.5-6.75Z" />
+                            </svg>
+                            <span class="ms-3">Users</span>
+                        </a>
+                    </li>
+                {/if}
 <!--                <li>-->
 <!--                    <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">-->
             <!--                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">-->

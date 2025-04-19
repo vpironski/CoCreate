@@ -8,7 +8,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 @Setter
@@ -25,8 +24,8 @@ public class User {
     @Field("password")
     private String password;
 
-    @Field("roles")
-    private List<UserRole> roles;
+    @Field("role")
+    private UserRole role;
 
     @Field("created_at")
     private LocalDateTime createdAt;

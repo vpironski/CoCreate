@@ -91,6 +91,7 @@ export async function loginUser(username, password) {
             localStorage.setItem('jwtToken', response.data.token);
             localStorage.setItem('userId', response.data.userId);
             localStorage.setItem('username', username);
+            localStorage.setItem('role', response.data.role);
         }
 
         return response.data;
@@ -117,6 +118,10 @@ export function getUsername() {
     return localStorage.getItem('username');
 }
 
+export function getRole(){
+    return localStorage.getItem('role');
+}
+
 export function isAuthenticated() {
     const token = localStorage.getItem('jwtToken');
     if (!token) return false;
@@ -134,6 +139,35 @@ export async function getUser(userId){
         return response.data
     }catch (error){
         throw new Error(handleApiError(error))
+    }
+}
+
+export async function getUsers() {
+    try {
+        const response = await api.get('/admin/users');
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
+
+export async function getAuditLogs(userId) {
+    try {
+        const response = await api.get(`/admin/audit-logs/${userId}`);
+        console.log(response.data)
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
+export async function restoreProject(userId, projectId) {
+    try {
+        const response = await api.post(`/admin/${userId}/restore-project/${projectId}`);
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
     }
 }
 
