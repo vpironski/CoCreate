@@ -1,6 +1,5 @@
 package org.cocreate.CoCreate.web;
 
-import org.cocreate.CoCreate.exception.BadRequestException;
 import org.cocreate.CoCreate.model.dto.ProjectDTO;
 import org.cocreate.CoCreate.model.dto.TaskDTO;
 import org.cocreate.CoCreate.model.entity.custom.fields.CustomFields;
@@ -48,16 +47,12 @@ public class ProjectController {
 
     @GetMapping("/create-project")
     public ResponseEntity<CustomFields> getProjectCustomFields(@PathVariable String userId) {
-        CustomFields customFields = projectService.getProjectCustomFields(userId);
-        return ResponseEntity.ok(customFields);
+        return ResponseEntity.ok(projectService.getProjectCustomFields(userId));
     }
 
     @PostMapping("/create-project")
     public ResponseEntity<ResponseMessage> createProject(@PathVariable String userId, @RequestBody ProjectDTO dto) {
-        if (!projectService.createProject(userId, dto)) {
-            throw new BadRequestException("Failed to create project!");
-        }
-        return ResponseEntity.ok(new ResponseMessage("Project created successfully!"));
+        return ResponseEntity.ok(new ResponseMessage(projectService.createProject(userId, dto)));
     }
 
     @GetMapping("/edit-project/{projectId}")
@@ -70,19 +65,13 @@ public class ProjectController {
             @PathVariable String userId,
             @PathVariable String projectId,
             @RequestBody(required = false) Project updatedProject) {
-        if (!projectService.updateProject(userId, projectId, updatedProject)) {
-            throw new BadRequestException("Failed to update project!");
-        }
-        return ResponseEntity.ok(new ResponseMessage("Project updated successfully!"));
+        return ResponseEntity.ok(new ResponseMessage(projectService.updateProject(userId, projectId, updatedProject)));
     }
 
     @DeleteMapping("/delete-project/{projectId}")
     public ResponseEntity<ResponseMessage> deleteProject(@PathVariable String userId,
-                                                         @PathVariable String projectId){
-        if (!projectService.deleteProject(userId, projectId)) {
-            throw new BadRequestException("Failed to delete project!");
-        }
-        return ResponseEntity.ok(new ResponseMessage("Project deleted successfully!"));
+                                                         @PathVariable String projectId) {
+        return ResponseEntity.ok(new ResponseMessage(projectService.deleteProject(userId, projectId)));
     }
 
     @GetMapping("/{projectId}/{taskId}")
@@ -93,15 +82,11 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.getTaskForEdit(userId, projectId, taskId));
     }
 
-
     @PostMapping("/{projectId}/task")
     public ResponseEntity<ResponseMessage> createTask(@PathVariable String userId,
                                                       @PathVariable String projectId,
                                                       @RequestBody TaskDTO taskDTO) {
-        if (!projectService.createTask(userId, projectId, taskDTO)) {
-            throw new BadRequestException("Failed to create task!");
-        }
-        return ResponseEntity.ok(new ResponseMessage("Task created successfully!"));
+        return ResponseEntity.ok(new ResponseMessage(projectService.createTask(userId, projectId, taskDTO)));
     }
 
     @PutMapping("/{projectId}/{taskId}/edit")
@@ -109,18 +94,14 @@ public class ProjectController {
                                                       @PathVariable String projectId,
                                                       @PathVariable String taskId,
                                                       @RequestBody(required = false) Task updatedTask) {
-        if (!projectService.updateTask(userId, projectId, taskId, updatedTask)) {
-            throw new BadRequestException("Failed to update task!");
-        }
-        return ResponseEntity.ok(new ResponseMessage("Task updated successfully!"));
+        return ResponseEntity.ok(new ResponseMessage(projectService.updateTask(userId, projectId, taskId, updatedTask)));
     }
 
     @DeleteMapping("/{projectId}/{taskId}/delete")
-    public ResponseEntity<ResponseMessage> deleteTask(@PathVariable String userId, @PathVariable String projectId, @PathVariable String taskId) {
-        if (!projectService.deleteTask(userId, projectId, taskId)) {
-            throw new BadRequestException("Failed to delete task!");
-        }
-        return ResponseEntity.ok(new ResponseMessage("Task deleted successfully!"));
+    public ResponseEntity<ResponseMessage> deleteTask(@PathVariable String userId,
+                                                      @PathVariable String projectId,
+                                                      @PathVariable String taskId) {
+        return ResponseEntity.ok(new ResponseMessage(projectService.deleteTask(userId, projectId, taskId)));
     }
 }
 

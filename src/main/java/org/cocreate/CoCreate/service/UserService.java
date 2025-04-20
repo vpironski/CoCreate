@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -27,13 +28,15 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final CustomUserDetailsService customUserDetailsService;
+    private final LogService logService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtils jwtUtils, CustomUserDetailsService customUserDetailsService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtils jwtUtils, CustomUserDetailsService customUserDetailsService, LogService logService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.customUserDetailsService = customUserDetailsService;
+        this.logService = logService;
     }
 
     public AuthResponse registerUser(UserRegisterDTO userDto) {
@@ -107,18 +110,38 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public boolean updateUser(String userId, User updatedUser) {
-        User existingUser = getUserById(userId);
-        existingUser.setUsername(updatedUser.getUsername());
-        existingUser.setUpdatedAt(LocalDateTime.now());
-        userRepository.save(existingUser);
-        return true;
+
+    public String updateUser(String userId, User updatedUser) {
+        try {
+            User existingUser = getUserById(userId);
+            existingUser.setUsername(updatedUser.getUsername());
+            existingUser.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(existingUser);
+
+             logService.logInfo("User updated successfully", userId, null, "User",
+                 Map.of("username", updatedUser.getUsername()));
+
+            return "User updated successfully";
+        } catch (Exception e) {
+             logService.logError("Failed to update user", userId, null, "User",
+                 Map.of("error", e.getMessage()), e);
+            throw new BadRequestException("Failed to update user");
+        }
     }
 
-    public boolean deleteUser(String userId) {
-        User user = getUserById(userId);
-        userRepository.delete(user);
-        return true;
+    public String deleteUser(String userId) {
+        try {
+            User user = getUserById(userId);
+            userRepository.delete(user);
+
+             logService.logInfo("User deleted successfully", userId, null, "User", null);
+
+            return "User deleted successfully";
+        } catch (Exception e) {
+             logService.logError("Failed to delete user", userId, null, "User",
+                 Map.of("error", e.getMessage()), e);
+            throw new BadRequestException("Failed to delete user");
+        }
     }
 
     public ResponseMessage addField(String userId, FieldSettingDTO dto) {

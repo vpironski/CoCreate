@@ -239,16 +239,16 @@
         <div class="container mx-auto">
             <h1 class="text-3xl font-bold mb-4">Kanban Board</h1>
 
-            <!-- Filter and control buttons area -->
-            <div class="flex flex-wrap gap-4 mb-4">
-                <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                    Filter
-                </button>
-                <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                    View Options
-                </button>
-                <!-- Add more controls as needed -->
-            </div>
+<!--            &lt;!&ndash; Filter and control buttons area &ndash;&gt;-->
+<!--            <div class="flex flex-wrap gap-4 mb-4">-->
+<!--                <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">-->
+<!--                    Filter-->
+<!--                </button>-->
+<!--                <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">-->
+<!--                    View Options-->
+<!--                </button>-->
+<!--                &lt;!&ndash; Add more controls as needed &ndash;&gt;-->
+<!--            </div>-->
         </div>
     </div>
 

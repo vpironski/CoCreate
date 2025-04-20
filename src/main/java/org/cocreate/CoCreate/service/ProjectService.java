@@ -105,18 +105,23 @@ public class ProjectService {
         return new ResponseMessage("Project workflow updated successfully");
     }
 
-    public boolean createProject(String userId, ProjectDTO projectDTO) {
-        Project project = ProjectTaskMapper.mapToProject(projectDTO, userId);
+    public String createProject(String userId, ProjectDTO projectDTO) {
+        try {
+            Project project = ProjectTaskMapper.mapToProject(projectDTO, userId);
+            projectRepository.save(project);
 
-        projectRepository.save(project);
+            logService.logInfo("Project created successfully", userId, project.getId(), "Project",
+                    Map.of("name", project.getName(), "description", project.getDescription()));
 
-        logService.logInfo("Project created successfully", userId, project.getId(), "Project",
-                Map.of("name", project.getName(), "description", project.getDescription()));
-
-        return true;
+            return "Project created successfully!";
+        } catch (Exception e) {
+            logService.logError("Failed to create project", userId, null, "Project",
+                    Map.of("error", e.getMessage()), e);
+            throw new BadRequestException(e.getMessage());
+        }
     }
 
-    public boolean updateProject(String userId, String projectId, Project updatedProject) {
+    public String updateProject(String userId, String projectId, Project updatedProject) {
         try {
             Project existingProject = getProjectByIdAndUserId(userId, projectId);
             ProjectTaskMapper.mapToProject(updatedProject, existingProject);
@@ -126,31 +131,39 @@ public class ProjectService {
             logService.logInfo("Project updated successfully", userId, projectId, "Project",
                     Map.of("name", updatedProject.getName(), "status", updatedProject.getStatus()));
 
-            return true;
+            return "Project updated successfully!";
         } catch (Exception e) {
             logService.logError("Error updating project", userId, projectId, "Project",
                     Map.of("error", e.getMessage()), e);
-            throw e;
+            throw new BadRequestException(e.getMessage());
         }
     }
 
-    public boolean deleteProject(String userId, String projectId){
-        Project existingProject = getProjectByIdAndUserId(userId, projectId);
 
-        AuditLog auditLog = new AuditLog();
-        auditLog.setEntityId(existingProject.getId());
-        auditLog.setUserId(userId);
-        auditLog.setDeletedAt(LocalDateTime.now());
-        auditLog.setOriginalData(existingProject);
-        auditLog.setType(EntityType.PROJECT);
-        auditLogRepository.save(auditLog);
+    public String deleteProject(String userId, String projectId) {
+        try {
+            Project existingProject = getProjectByIdAndUserId(userId, projectId);
 
-        projectRepository.delete(existingProject);
-        logService.logInfo("Project deleted", userId, projectId, "Project", existingProject);
+            AuditLog auditLog = new AuditLog();
+            auditLog.setEntityId(existingProject.getId());
+            auditLog.setUserId(userId);
+            auditLog.setDeletedAt(LocalDateTime.now());
+            auditLog.setOriginalData(existingProject);
+            auditLog.setType(EntityType.PROJECT);
+            auditLogRepository.save(auditLog);
 
-        return true;
+            projectRepository.delete(existingProject);
+            logService.logInfo("Project deleted", userId, projectId, "Project", existingProject);
 
+            return "Project deleted successfully!";
+        } catch (Exception e) {
+            logService.logError("Failed to delete project", userId, projectId, "Project",
+                    Map.of("error", e.getMessage()), e);
+            throw new BadRequestException(e.getMessage());
+        }
     }
+
+
     private String extractId(Object obj) {
         try {
             Field idField = obj.getClass().getDeclaredField("id");
@@ -167,32 +180,45 @@ public class ProjectService {
                 .getTaskById(taskId);
     }
 
-    public boolean createTask(String userId, String projectId, TaskDTO taskDTO) {
-        Project project = getProjectByIdAndUserId(userId, projectId);
-
-        Task task = ProjectTaskMapper.mapToTask(taskDTO);
-
-        project.getWorkflow().addTaskToCard(taskDTO.getCard(), task);
-        projectRepository.save(project);
-        return true;
+    public String createTask(String userId, String projectId, TaskDTO taskDTO) {
+        try {
+            Project project = getProjectByIdAndUserId(userId, projectId);
+            Task task = ProjectTaskMapper.mapToTask(taskDTO);
+            project.getWorkflow().addTaskToCard(taskDTO.getCard(), task);
+            projectRepository.save(project);
+            return "Task created successfully!";
+        } catch (Exception e) {
+            logService.logError("Failed to create task", userId, projectId, "Task",
+                    Map.of("error", e.getMessage()), e);
+            throw new BadRequestException(e.getMessage());
+        }
     }
 
-    public boolean updateTask(String userId, String projectId, String taskId, Task updatedTask) {
-        Project project = getProjectByIdAndUserId(userId, projectId);
-
-        Task existingTask = project.getWorkflow().getTaskById(taskId);
-
-        ProjectTaskMapper.mapToTask(updatedTask, existingTask);
-        projectRepository.save(project);
-        return true;
+    public String updateTask(String userId, String projectId, String taskId, Task updatedTask) {
+        try {
+            Project project = getProjectByIdAndUserId(userId, projectId);
+            Task existingTask = project.getWorkflow().getTaskById(taskId);
+            ProjectTaskMapper.mapToTask(updatedTask, existingTask);
+            projectRepository.save(project);
+            return "Task updated successfully!";
+        } catch (Exception e) {
+            logService.logError("Failed to update task", userId, projectId, "Task",
+                    Map.of("error", e.getMessage(), "taskId", taskId), e);
+            throw new BadRequestException(e.getMessage());
+        }
     }
 
-    public boolean deleteTask(String userId, String projectId, String taskId) {
-        Project project = getProjectByIdAndUserId(userId, projectId);
-        project.getWorkflow().removeTaskById(taskId);
-
-        projectRepository.save(project);
-        return true;
+    public String deleteTask(String userId, String projectId, String taskId) {
+        try {
+            Project project = getProjectByIdAndUserId(userId, projectId);
+            project.getWorkflow().removeTaskById(taskId);
+            projectRepository.save(project);
+            return "Task deleted successfully!";
+        } catch (Exception e) {
+            logService.logError("Failed to delete task", userId, projectId, "Task",
+                    Map.of("error", e.getMessage(), "taskId", taskId), e);
+            throw new BadRequestException(e.getMessage());
+        }
     }
 
 

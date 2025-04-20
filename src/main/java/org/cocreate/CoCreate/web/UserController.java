@@ -1,6 +1,5 @@
 package org.cocreate.CoCreate.web;
 
-import org.cocreate.CoCreate.exception.BadRequestException;
 import org.cocreate.CoCreate.model.dto.FieldSettingDTO;
 import org.cocreate.CoCreate.model.record.AuthResponse;
 import org.cocreate.CoCreate.model.record.ResponseMessage;
@@ -56,19 +55,14 @@ public class UserController {
     public ResponseEntity<ResponseMessage> removeField(@PathVariable String userId, @RequestBody FieldSettingDTO dto) {
         return ResponseEntity.ok(userService.removeField(userId, dto));
     }
+
     @PutMapping("/{userId}")
     public ResponseEntity<ResponseMessage> updateUser(@PathVariable String userId, @RequestBody User user) {
-        if (!userService.updateUser(userId, user)) {
-            throw new BadRequestException("Failed to update user");
-        }
-        return ResponseEntity.ok(new ResponseMessage("User updated successfully"));
+        return ResponseEntity.ok(new ResponseMessage(userService.updateUser(userId, user)));
     }
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<ResponseMessage> deleteUser(@PathVariable String userId) {
-        if (!userService.deleteUser(userId)) {
-            throw new BadRequestException("Failed to delete user");
-        }
-        return ResponseEntity.ok(new ResponseMessage("User deleted successfully"));
+        return ResponseEntity.ok(new ResponseMessage(userService.deleteUser(userId)));
     }
 }
