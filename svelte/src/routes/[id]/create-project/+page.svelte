@@ -102,7 +102,6 @@
                 const type = fieldDef.type;
                 let currentValue = project.customFields[name];
 
-                // Process value based on type
                 if (type === 'number') {
                     currentValue = (currentValue === '' || currentValue === null || isNaN(parseFloat(currentValue))) ? 0 : parseFloat(currentValue);
                 } else if (type === 'checkbox') {
@@ -111,7 +110,7 @@
                     currentValue = currentValue || null;
                 } else if (type === 'datetime-local') {
                     currentValue = currentValue || null;
-                } else { // text
+                } else {
                     currentValue = (currentValue === null || currentValue === undefined) ? "" : String(currentValue);
                 }
 
