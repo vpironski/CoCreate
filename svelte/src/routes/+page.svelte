@@ -1,6 +1,7 @@
 <script>
     import { loginUser, registerUser} from '$lib/api';
     import { goto } from '$app/navigation';
+    import {userStore} from "$lib/stores/user.js";
 
     let username = '';
     let email = '';
@@ -21,6 +22,11 @@
             }
 
             if (userData?.userId) {
+                userStore.setUser({
+                    userId: userData.userId,
+                    username: username,
+                    role: userData.role
+                });
                 username = '';
                 email = '';
                 password = '';

@@ -1,30 +1,16 @@
 <script>
 	import '../app.css';
     import { page } from '$app/stores';
-    import {getUsername, getUserId, logoutUser, getRole} from '$lib/api';
+    import {logoutUser} from '$lib/api';
     import { goto } from '$app/navigation';
-    import { onMount } from 'svelte';
     import { browser } from '$app/environment';
+    import {userStore} from "$lib/stores/user.js";
 
-    let userId = '';
-    let username = '';
     let message = '';
-    let role = '';
-
     let showDropdown = false;
     const toggleDropdown = () => showDropdown = !showDropdown;
 
     $: layoutClasses = $page.data.showNavbar ?? true ? 'min-h-screen overflow-y-auto ml-0 md:ml-64 pt-16' : '';
-
-    onMount(() => {
-        if (browser) {
-            userId = getUserId();
-            username = getUsername();
-            role = getRole();
-            console.log(role)
-        }
-    });
-
 
     async function handleSignOut() {
         try {
@@ -56,10 +42,7 @@
             font-weight: 350;
         }
 
-        /* Optional: Create weight classes for specific elements */
         .font-semibold { font-weight: 450; }
-        /*.font-bold { font-weight: 600; }*/
-        /*.font-extrabold { font-weight: 700; }*/
     </style>
 
 </svelte:head>
@@ -78,7 +61,7 @@
 <!--                            <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>-->
 <!--                        </svg>-->
 <!--                    </button>-->
-                    <a href={userId ? `/${userId}/dashboard` : '/'} class="flex ms-2 md:me-24">
+                    <a href={$userStore.userId ? `/${$userStore.userId}/dashboard` : '/'} class="flex ms-2 md:me-24">
                         <span class="self-center text-xl font-semibold sm:text-4xl whitespace-nowrap text-teal-900 dark:text-teal-500">
                             CoCreate
                         </span>
@@ -87,14 +70,14 @@
                 <div class="flex items-center">
                     <div class="flex items-center ms-3 group relative">
                         <div class="relative flex items-center gap-2">
-                            {#if username}
-                                <span class="text-xl font-medium">{username}</span>
+                            {#if $userStore.username}
+                                <span class="text-xl font-medium">{$userStore.username}</span>
                             {/if}
 
                             <button on:click={toggleDropdown} class="focus:outline-none">
                                 <img
                                         class="w-8 h-8 rounded-full bg-gray-200"
-                                        src={`https://ui-avatars.com/api/?name=${username || 'U'}&background=random`}
+                                        src={`https://ui-avatars.com/api/?name=${$userStore.username || 'U'}&background=random`}
                                         alt="User avatar"
                                 />
                             </button>
@@ -105,7 +88,7 @@
                                     <ul class="py-1">
                                         <li class="block md:hidden">
                                             <a
-                                                    href={userId ? `/${userId}/dashboard` : '/'}
+                                                    href={$userStore.userId ? `/${$userStore.userId}/dashboard` : '/'}
                                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
                                             >
                                                 Dashboard
@@ -113,7 +96,7 @@
                                         </li>
                                         <li>
                                             <a
-                                                    href={userId ? `/${userId}` : '/'}
+                                                    href={$userStore.userId ? `/${$userStore.userId}` : '/'}
                                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
                                             >
                                                 Your profile
@@ -141,7 +124,7 @@
         <div class="h-full px-3 pb-4 overflow-y-auto dark:bg-gray-800">
             <ul class="space-y-2 font-medium">
                 <li>
-                    <a href={userId ? `/${userId}/create-project` : '/'} class="flex items-center p-2 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                    <a href={$userStore.userId ? `/${$userStore.userId}/create-project` : '/'} class="flex items-center p-2 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                         <svg class="shrink-0 w-5 h-5 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 18">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
@@ -151,7 +134,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href={userId ? `/${userId}/dashboard` : '/'} class="flex items-center p-2 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                    <a href={$userStore.userId ? `/${$userStore.userId}/dashboard` : '/'} class="flex items-center p-2 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                         <svg class="shrink-0 w-5 h-5 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 18">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 6.878V6a2.25 2.25 0 0 1 2.25-2.25h7.5A2.25 2.25 0 0 1 18 6v.878m-12 0c.235-.083.487-.128.75-.128h10.5c.263 0 .515.045.75.128m-12 0A2.25 2.25 0 0 0 4.5 9v.878m13.5-3A2.25 2.25 0 0 1 19.5 9v.878m0 0a2.246 2.246 0 0 0-.75-.128H5.25c-.263 0-.515.045-.75.128m15 0A2.25 2.25 0 0 1 21 12v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6c0-.98.626-1.813 1.5-2.122" />
@@ -160,7 +143,7 @@
                         <span class="ms-3">Dashboard</span>
                     </a>
                 </li>
-                {#if role === 'ADMIN'}
+                {#if $userStore.role === 'ADMIN'}
                     <li>
                         <a href="/admin/users" class="flex items-center p-2 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="shrink-0 w-5 h-5 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
