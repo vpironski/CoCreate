@@ -285,7 +285,7 @@ export async function createTask(userId, projectId, task) {
 
 export async function updateTask(userId, projectId, taskId, updatedTask) {
     try {
-        const response = await api.put(`/${userId}/${projectId}/${taskId}/edit`, updatedTask);
+        const response = await api.put(`/${userId}/dashboard/${projectId}/${taskId}/edit`, updatedTask);
         return response.data;
     } catch (error) {
         throw new Error(handleApiError(error));
