@@ -303,7 +303,7 @@ export async function deleteTask(userId, projectId, taskId) {
 
 export async function reorderColumns(userId, projectId, newOrder) {
     try {
-        const response = await api.put(`/${userId}/dashboard/${projectId}/reorderColumns`, { newOrder });
+        const response = await api.put(`/${userId}/dashboard/${projectId}/reorder-cards`, { newOrder });
         return response.data;
     } catch (error) {
         throw new Error(handleApiError(error));

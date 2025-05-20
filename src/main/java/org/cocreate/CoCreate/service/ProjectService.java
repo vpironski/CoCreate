@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -103,6 +104,48 @@ public class ProjectService {
                 Map.of("name", project.getName()));
 
         return new ResponseMessage("Project workflow updated successfully");
+    }
+
+    public ResponseMessage reorderCards(String userId, String projectId, List<String> newOrder) {
+        try {
+            Project project = getProjectByIdAndUserId(userId, projectId);
+
+            // Get the current workflow
+            Workflow workflow = project.getWorkflow();
+            if (workflow == null) {
+                workflow = new Workflow();
+                project.setWorkflow(workflow);
+            }
+
+            // Create a new ordered map for the cards
+            LinkedHashMap<String, List<Task>> reorderedCards = new LinkedHashMap<>();
+
+            // Rebuild the cards map in the new order
+            for (String cardName : newOrder) {
+                if (workflow.getCards().containsKey(cardName)) {
+                    reorderedCards.put(cardName, workflow.getCards().get(cardName));
+                }
+            }
+
+            // Add any remaining cards that weren't in the new order (shouldn't happen if frontend sends complete list)
+            workflow.getCards().forEach((cardName, tasks) -> {
+                if (!reorderedCards.containsKey(cardName)) {
+                    reorderedCards.put(cardName, tasks);
+                }
+            });
+
+            // Update the workflow with the new order
+            workflow.setCards(reorderedCards);
+
+            // Save the project
+            projectRepository.save(project);
+
+            return new ResponseMessage("Cards reordered successfully");
+        } catch (Exception e) {
+            logService.logError("Failed to reorder cards", userId, projectId, "Workflow",
+                    Map.of("error", e.getMessage()), e);
+            throw new BadRequestException("Failed to reorder cards: " + e.getMessage());
+        }
     }
 
     public String createProject(String userId, ProjectDTO projectDTO) {

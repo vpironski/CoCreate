@@ -1,6 +1,7 @@
 package org.cocreate.CoCreate.web;
 
 import org.cocreate.CoCreate.model.dto.ProjectDTO;
+import org.cocreate.CoCreate.model.dto.ReorderCardsDTO;
 import org.cocreate.CoCreate.model.dto.TaskDTO;
 import org.cocreate.CoCreate.model.entity.custom.fields.CustomFields;
 import org.cocreate.CoCreate.model.dto.CardDTO;
@@ -43,6 +44,14 @@ public class ProjectController {
     @DeleteMapping("/{projectId}/remove-card")
     public ResponseEntity<ResponseMessage> removeCard(@PathVariable String userId, @PathVariable String projectId, @RequestBody CardDTO cardDTO){
         return ResponseEntity.ok(projectService.removeCard(userId, projectId, cardDTO));
+    }
+
+    @PutMapping("/{projectId}/reorder-cards")
+    public ResponseEntity<ResponseMessage> reorderCards(
+            @PathVariable String userId,
+            @PathVariable String projectId,
+            @RequestBody ReorderCardsDTO reorderRequest) {
+        return ResponseEntity.ok(projectService.reorderCards(userId, projectId, reorderRequest.getNewOrder()));
     }
 
     @GetMapping("/create-project")
