@@ -62,8 +62,8 @@
 <!--                        </svg>-->
 <!--                    </button>-->
                     <a href={$userStore.userId ? `/${$userStore.userId}/dashboard` : '/'} class="flex ms-2 md:me-24">
-                        <span class="self-center text-xl font-semibold sm:text-4xl whitespace-nowrap text-teal-900 dark:text-teal-500">
-                            CoCreate
+                       <span class="self-center text-xl font-semibold sm:text-4xl whitespace-nowrap text-teal-900 dark:text-teal-500">
+                            <img src="/green_icon.png" class="h-8 sm:h-12">
                         </span>
                     </a>
                 </div>
@@ -102,6 +102,16 @@
                                                 Your profile
                                             </a>
                                         </li>
+                                        {#if $userStore.role === 'ADMIN'}
+                                            <li class="block md:hidden">
+                                                <a
+                                                        href="/admin/users"
+                                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
+                                                >
+                                                    Users
+                                                </a>
+                                            </li>
+                                        {/if}
                                         <li>
                                             <button
                                                     on:click={handleSignOut}

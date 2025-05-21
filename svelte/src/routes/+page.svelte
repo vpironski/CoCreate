@@ -47,11 +47,11 @@
         <div class="max-w-md space-y-6 md:space-y-8">
                 <!-- CoCreate Title -->
                 <h1 class="text-5xl md:text-8xl font-bold text-orange-500 dark:text-orange-300 text-center md:text-left">
-                    CoCreate
+                    <img src="orange_icon.png" alt="CoCreate" class="h-12 md:h-20">
                 </h1>
 
                 <!-- Main Quote -->
-                <blockquote class="text-3xl md:text-6xl font-bold text-teal-900 dark:text-teal-500 leading-tight text-center md:text-left">
+                <blockquote class="text-3xl md:text-5xl font-bold text-teal-900 dark:text-teal-500 leading-tight text-center md:text-left">
                     "Be the reason something <span class="text-orange-500 dark:text-orange-300">exists</span>."
                 </blockquote>
 
