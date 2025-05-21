@@ -2,7 +2,7 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { browser } from '$app/environment';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = import.meta.env.API_URL || 'http://localhost:8080/api';
 
 const api = axios.create({
     baseURL: API_URL,

@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
 	server: {
-		host: true, // Allows external access from Docker network
+		host: true,
 		port: 5173
 	}
 });
