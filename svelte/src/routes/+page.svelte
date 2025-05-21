@@ -9,9 +9,32 @@
     let isRegistering = false;
     let errorMessage = '';
 
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+    function validateEmail(input) {
+        return emailRegex.test(input);
+    }
+
+    function validatePassword(input) {
+        return passwordRegex.test(input);
+    }
+
 
     async function handleSubmit() {
         try {
+            if (isRegistering) {
+                if (!validateEmail(email)) {
+                    errorMessage = 'Please enter a valid email address';
+                    return;
+                }
+
+                if (!validatePassword(password)) {
+                    errorMessage = 'Password must be at least 8 characters long and contain at least one letter and one number';
+                    return;
+                }
+            }
+
             let userData;
             errorMessage = '';
 
@@ -130,6 +153,9 @@
                                        id="email"
                                        class="bg-gray-50 border border-gray-300 text-gray-700 rounded-lg focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500"
                                        placeholder="name@company.com" required>
+                                {#if email && !validateEmail(email)}
+                                    <p class="mt-1 text-sm text-red-500">Please enter a valid email address</p>
+                                {/if}
                             </div>
                         {/if}
 
@@ -142,6 +168,11 @@
                                    id="password"
                                    class="bg-gray-50 border border-gray-300 text-gray-700 rounded-lg focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-teal-500 dark:focus:border-teal-500"
                                    placeholder="password" required>
+                            {#if isRegistering && password && !validatePassword(password)}
+                                <p class="mt-1 text-sm text-red-500">
+                                    Password must be at least 8 characters with at least one letter and one number
+                                </p>
+                            {/if}
                         </div>
 
                         <!-- Toggle Button -->
