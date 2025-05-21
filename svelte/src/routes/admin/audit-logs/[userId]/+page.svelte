@@ -41,6 +41,7 @@
                 <li class="p-4 border rounded-md shadow-sm bg-white dark:bg-gray-800 dark:text-white flex justify-between items-center">
                     <div>
                         <p><strong>Entity ID:</strong> {log.entityId}</p>
+                        <p><strong>Project: </strong>{log.originalData.name}</p>
                         <p><strong>Deleted At:</strong> {new Date(log.deletedAt).toLocaleString()}</p>
                         <p><strong>Type:</strong> {log.type}</p>
                     </div>
