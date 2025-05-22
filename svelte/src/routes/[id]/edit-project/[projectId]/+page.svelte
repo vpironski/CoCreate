@@ -207,7 +207,7 @@
             <!-- Status -->
             <div>
                 <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
-                    Priority
+                    Status
                 </label>
                 <div class="flex space-x-4">
                     {#each ['DRAFT', 'ACTIVE', 'COMPLETED', 'ARCHIVED'] as status}
